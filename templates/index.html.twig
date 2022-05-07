@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>SheetPost</title>
+    {% include 'bootstrap.html.twig' %}
+    <link href="static/styles.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container-fluid d-flex h-100 align-items-center p-0">
+            {% include 'navbar.html.twig' with {'authorized': authorized} %}
+        </div>
+    </header>
+    <div class="posts m-0 m-auto pb-3">
+        {% for post in posts %}
+            <div class="card w-100 mt-3">
+                <div class="card-body">
+                    <h5 class="card-title">@{{ post["username"] }}</h5>
+                    <p class="card-text">{{ post["message"] }}</p>
+                    <p class="card-text d-flex justify-content-between">
+                        <small class="text-muted">{{ post["date"] }}</small>
+                        <span id="post{{ post["id"] }}"
+                              {% if authorized %}
+                                  role="button"
+                              {% endif %}
+                              class="sheet d-flex align-self-center">
+                            <span class="me-2">
+                                {% if post["sheet_count"] > 0 %}
+                                    {{ post["sheet_count"] }}
+                                {% endif %}
+                            </span>
+                            <img src="static/brand.png" alt="" width="24" height="24"
+                                 {% if post["sheeted"] %}
+                                     style="opacity: 1"
+                                 {% else %}
+                                     style="opacity: .5"
+                                 {% endif %}
+                                 class="d-inline-block align-text-top">
+                        </span>
+                    </p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+<script src="static/scripts.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<div class="modal fade" id="logInModalToggle" aria-hidden="true" aria-labelledby="logInModalToggleLabel" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logInModalToggleLabel">Authorization</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="logInForm" action="" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label" for="logInInlineFormInputGroupUsername">Username</label>
+                        <div class="input-group">
+                            <div class="input-group-text">@</div>
+                            <input type="text"
+                                   name="username"
+                                   class="form-control"
+                                   id="logInInlineFormInputGroupUsername"
+                                   placeholder="Username"
+                                   value="">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="logInInputPassword" class="form-label">Password</label>
+                        <input type="password"
+                               name="password"
+                               class="form-control"
+                               id="logInInputPassword"
+                               placeholder="Password"
+                               value="">
+                    </div>
+                    <div class="modal-footer ps-0 pe-0 justify-content-between">
+                        <a href="#signUpModalToggle" data-bs-toggle="modal" role="button" class="d-flex align-items-center">
+                            <div id="noAccount">No account?</div>
+                        </a>
+                        <button class="btn btn-primary" data-bs-toggle="modal">Enter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<a class="btn btn-primary" data-bs-toggle="modal" href="#logInModalToggle" role="button">Log in</a>

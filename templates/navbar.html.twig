@@ -1,0 +1,29 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
+    <div class="container-fluid" id="navbarContainer">
+        <a class="navbar-brand" href="#">
+            <img src="static/brand.png" alt="" width="24" height="24" class="d-inline-block align-text-top">
+            SheetPost
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                {% if authorized %}
+{#                    <a class="nav-link active" aria-current="page" href="#">Home</a>#}
+                    <a class="nav-link" href="#myposts">My posts</a>
+                {% endif %}
+            </div>
+            <div class="navbar-nav">
+                {% if authorized %}
+                    {% include 'newpost.html.twig' %}
+                    {% include 'logout.html.twig' %}
+                {% else %}
+                    {% include 'login.html.twig' %}
+                    {% include 'signup.html.twig' %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
