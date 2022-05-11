@@ -15,12 +15,12 @@ Dotenv::createImmutable(dirname(__DIR__))->load();
 
 $logger = new LoggerWrapper("Logger");
 
-$requestedPath = explode('/?', $_SERVER['REQUEST_URI'])[0];
+$requestedPath = rtrim(explode('?', $_SERVER['REQUEST_URI'])[0], '/');
 $responseClass = str_replace(['/ ', '- ', 'Api'], ['\\', '', 'API'], ucwords(str_replace(['/', '-'], ['/ ', '- '], $requestedPath)));
 
 if (class_exists($responseClass)) {
     $response = new $responseClass($_ENV['DB_HOST'], $_ENV['DB_NAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
     echo json_encode($response->getResponse($_GET));
 } else {
-    echo json_encode(['success' => false]);
+    echo json_encode(['success' => false, 'error' => 'unknown method']);
 }

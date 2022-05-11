@@ -4,7 +4,6 @@ namespace Sheetpost\API;
 
 use DateTime;
 use Exception;
-use JetBrains\PhpStorm\ArrayShape;
 
 class CreateNewPost extends Response
 {
@@ -17,13 +16,16 @@ class CreateNewPost extends Response
     /**
      * @throws Exception
      */
-    #[ArrayShape(["success" => "bool"])]
     protected function getQueryResponse(array $getParameters): array
     {
         $username = $getParameters['username'];
         $password = $getParameters['password'];
+        $message = addcslashes($getParameters['message'], "'");
+
+        if (strlen($message) > 4096) {
+            return ['success' => false, 'error' => 'message is too long (maximum 4096 characters)'];
+        }
         if ($this->db->isUserExists($username, $password)) {
-            $message = $getParameters['message'];
             $date = (new DateTime())->format('Y-m-d H:i:s');
             $this->db->query("
                 INSERT INTO posts (username, date, message)
@@ -31,6 +33,6 @@ class CreateNewPost extends Response
             );
             return ['success' => true];
         }
-        return ['success' => false];
+        return ['success' => false, 'error' => 'invalid username or password'];
     }
 }

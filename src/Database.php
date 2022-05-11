@@ -54,15 +54,32 @@ class Database
     /**
      * @throws Exception
      */
-    public function getAllPosts(string|null $username, string|null $password): array
+    public function getAllPosts(string|null $authorizedUser = null): array
     {
-        $sheeted = isset($username, $password) && $this->isUserExists($username, $password)
-            ? "(SELECT COUNT(*) FROM sheets WHERE posts.id=sheets.post_id AND sheets.username='$username')" : "1";
+        $sheeted = $authorizedUser
+            ? "(SELECT COUNT(*) FROM sheets WHERE posts.id=sheets.post_id AND sheets.username='$authorizedUser')" : "1";
         return $this->query("
             SELECT *,
                    (SELECT COUNT(*) FROM sheets WHERE posts.id=sheets.post_id) as sheet_count,
                    $sheeted as sheeted
             FROM posts
+            ORDER BY date DESC"
+        )->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getUserPosts(string $username): array
+    {
+        return $this->query("
+            SELECT *,
+                   (SELECT COUNT(*) FROM sheets
+                                    WHERE posts.id = sheets.post_id) as sheet_count,
+                   (SELECT COUNT(*) FROM sheets
+                                    WHERE posts.id = sheets.post_id AND sheets.username='$username') as sheeted
+            FROM posts
+            WHERE username='$username'
             ORDER BY date DESC"
         )->fetchAll(PDO::FETCH_ASSOC);
     }

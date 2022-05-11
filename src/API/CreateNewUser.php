@@ -3,7 +3,6 @@
 namespace Sheetpost\API;
 
 use Exception;
-use JetBrains\PhpStorm\ArrayShape;
 use PDOException;
 
 class CreateNewUser extends Response
@@ -17,11 +16,16 @@ class CreateNewUser extends Response
     /**
      * @throws Exception
      */
-    #[ArrayShape(["success" => "bool"])]
     protected function getQueryResponse(array $getParameters): array
     {
         $username = $getParameters['username'];
         $password = $getParameters['password'];
+        if (strlen($username) > 32) {
+            return ['success' => false, 'error' => 'username is too long (maximum 32 characters)'];
+        }
+        if (strlen($password) > 64) {
+            return ['success' => false, 'error' => 'password is too long (maximum 64 characters)'];
+        }
         try {
             $this->db->query("
                 INSERT INTO users (username, password)
@@ -29,7 +33,7 @@ class CreateNewUser extends Response
             );
             return ['success' => true];
         } catch (PDOException) {
-            return ['success' => false];
+            return ['success' => false, 'error' => 'this username is already taken'];
         }
     }
 }

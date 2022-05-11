@@ -7,20 +7,21 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="signUp" action="index.php" method="post" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <label class="form-label" for="signUpInlineFormInputGroupUsername">Username</label>
+                <form id="signUpForm" action="/sheetpost/login" method="post" enctype="multipart/form-data">
+                    <div class="mb-1">
+                        <label class="form-label" for="signUpInputUsername">Username</label>
                         <div class="input-group">
                             <div class="input-group-text">@</div>
                             <input type="text"
                                    name="username"
                                    class="form-control"
-                                   id="signUpInlineFormInputGroupUsername"
+                                   id="signUpInputUsername"
                                    placeholder="Username"
                                    value="">
                         </div>
                     </div>
-                    <div class="mb-3">
+                    <div id="signUpInputUsernameValidationLabel" class="mb-2 text-danger"></div>
+                    <div class="mb-1">
                         <label for="signUpInputPassword" class="form-label">Password</label>
                         <input type="password"
                                name="password"
@@ -29,7 +30,8 @@
                                placeholder="Password"
                                value="">
                     </div>
-                    <div class="mb-3">
+                    <div id="signUpInputPasswordValidationLabel" class="mb-2 text-danger"></div>
+                    <div class="mb-1">
                         <label for="signUpReEnterInputPassword" class="form-label">Re-enter password</label>
                         <input type="password"
                                class="form-control"
@@ -37,13 +39,15 @@
                                placeholder="Password"
                                value="">
                     </div>
-                    <div class="modal-footer ps-0 pe-0 justify-content-between">
-                        <a href="#logInModalToggle" data-bs-toggle="modal" role="button" class="d-flex align-items-center">
-                            <div id="haveGotAnAccount">Have got an account?</div>
-                        </a>
-                        <button class="btn btn-primary" data-bs-toggle="modal">Enter</button>
-                    </div>
+                    <div id="signUpInputReEnterPasswordValidationLabel" class="mb-2 text-danger"></div>
                 </form>
+                <div id="signUpFormValidationLabel" class="mb-2 text-danger"></div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <a href="#logInModalToggle" data-bs-toggle="modal" role="button" class="d-flex align-items-center">
+                    <div>Have got an account?</div>
+                </a>
+                <button id="signUpEnter" class="btn btn-primary">Enter</button>
             </div>
         </div>
     </div>

@@ -1,0 +1,23 @@
+{% extends 'index.html.twig' %}
+
+{% block title %}My posts{% endblock %}
+
+{% block noposts %}It looks like you don't have any posts :({% endblock %}
+
+{% block script %}
+    <!--suppress HtmlUnknownTarget -->
+    <script src="/sheetpost/static/authorized.js"></script>
+{% endblock %}
+
+{% block logohref %}href="/sheetpost/home"{% endblock %}
+
+{% block myposts %}
+    <a class="nav-link active" href="/sheetpost/myposts">My posts @{{ user }}</a>
+{% endblock %}
+
+{% block buttons %}
+    {% include 'newpost.html.twig' %}
+    {% include 'logout.html.twig' %}
+{% endblock %}
+
+{% block sheetrole %}role="button"{% endblock %}

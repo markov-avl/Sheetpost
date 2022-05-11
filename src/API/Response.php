@@ -30,7 +30,7 @@ abstract class Response
             $this->db->connect();
             return $this->getQueryResponse($getParameters);
         }
-        return ["success" => false];
+        return ['success' => false, 'error' => 'missing parameters'];
     }
 
     protected abstract function getQueryResponse(array $getParameters): array;

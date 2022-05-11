@@ -17,7 +17,7 @@ class LoggerWrapper extends Logger {
                                 array $processors = [],
                                 ?DateTimeZone $timezone = null) {
         parent::__construct($name, $handlers, $processors, $timezone);
-        $this->logsPath = join(DIRECTORY_SEPARATOR, [dirname(__DIR__), "logs", "logs.log"]);
+        $this->logsPath = join(DIRECTORY_SEPARATOR, [dirname(__DIR__), 'var', 'log', 'app.log']);
         $this->streamHandler = new StreamHandler($this->logsPath);
         $this->setHandler();
         $this->setFormat();

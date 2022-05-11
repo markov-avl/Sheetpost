@@ -4,7 +4,7 @@ html, body {
 
 textarea {
     resize: none;
-    height: calc(100vh - 282px);
+    height: calc(100vh - 300px);
 }
 
 #navbarContainer {

@@ -6,21 +6,22 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="logInForm" action="" method="post" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <label class="form-label" for="logInInlineFormInputGroupUsername">Username</label>
+                <form id="logInForm" action="/sheetpost/login" method="post" enctype="multipart/form-data">
+                    <div class="mb-1">
+                        <label class="form-label" for="logInInputUsername">Username</label>
                         <div class="input-group">
                             <div class="input-group-text">@</div>
                             <input type="text"
                                    name="username"
                                    class="form-control"
-                                   id="logInInlineFormInputGroupUsername"
+                                   id="logInInputUsername"
                                    placeholder="Username"
                                    value="">
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="logInInputPassword" class="form-label">Password</label>
+                    <div id="logInInputUsernameValidationLabel" class="mb-2 text-danger"></div>
+                    <div class="mb-1">
+                        <label class="form-label" for="logInInputPassword">Password</label>
                         <input type="password"
                                name="password"
                                class="form-control"
@@ -28,13 +29,15 @@
                                placeholder="Password"
                                value="">
                     </div>
-                    <div class="modal-footer ps-0 pe-0 justify-content-between">
-                        <a href="#signUpModalToggle" data-bs-toggle="modal" role="button" class="d-flex align-items-center">
-                            <div id="noAccount">No account?</div>
-                        </a>
-                        <button class="btn btn-primary" data-bs-toggle="modal">Enter</button>
-                    </div>
+                    <div id="logInInputPasswordValidationLabel" class="mb-2 text-danger"></div>
                 </form>
+                <div id="logInFormValidationLabel" class="mb-2 text-danger"></div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <a href="#signUpModalToggle" data-bs-toggle="modal" role="button" class="d-flex align-items-center">
+                    <div>No account?</div>
+                </a>
+                <button id="logInEnter" class="btn btn-primary">Enter</button>
             </div>
         </div>
     </div>

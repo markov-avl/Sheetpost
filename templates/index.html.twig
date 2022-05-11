@@ -4,16 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <title>SheetPost</title>
+    <title>{% block title %}{% endblock %}</title>
+    <!--suppress HtmlUnknownTarget -->
+    <link rel="icon" href="/sheetpost/static/brand.png">
+    <!--suppress HtmlUnknownTarget -->
+    <link rel="stylesheet" href="/sheetpost/static/styles.css">
     {% include 'bootstrap.html.twig' %}
-    <link href="static/styles.css" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <div class="container-fluid d-flex h-100 align-items-center p-0">
-            {% include 'navbar.html.twig' with {'authorized': authorized} %}
-        </div>
-    </header>
+<header>
+    <div class="container-fluid d-flex h-100 align-items-center p-0">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
+            <div class="container-fluid" id="navbarContainer">
+                <a class="navbar-brand" {% block logohref %}{% endblock %}>
+                    <!--suppress HtmlUnknownTarget -->
+                    <img src="/sheetpost/static/brand.png" alt="" width="24" height="24"
+                         class="d-inline-block align-text-top">
+                    SheetPost
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+                        aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                    <div class="navbar-nav">
+                        {% block myposts %}{% endblock %}
+                    </div>
+                    <div class="navbar-nav">
+                        {% block buttons %}{% endblock %}
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+</header>
+{% if posts is empty %}
+    <p class="text-center fs-1 m-0 m-auto pt-5 pb-5">{% block noposts %}{% endblock %}</p>
+{% else %}
     <div class="posts m-0 m-auto pb-3">
         {% for post in posts %}
             <div class="card w-100 mt-3">
@@ -23,16 +50,15 @@
                     <p class="card-text d-flex justify-content-between">
                         <small class="text-muted">{{ post["date"] }}</small>
                         <span id="post{{ post["id"] }}"
-                              {% if authorized %}
-                                  role="button"
-                              {% endif %}
+                              {% block sheetrole %}{% endblock %}
                               class="sheet d-flex align-self-center">
                             <span class="me-2">
                                 {% if post["sheet_count"] > 0 %}
                                     {{ post["sheet_count"] }}
                                 {% endif %}
                             </span>
-                            <img src="static/brand.png" alt="" width="24" height="24"
+                            <!--suppress HtmlUnknownTarget -->
+                            <img src="/sheetpost/static/brand.png" alt="" width="24" height="24"
                                  {% if post["sheeted"] %}
                                      style="opacity: 1"
                                  {% else %}
@@ -45,6 +71,7 @@
             </div>
         {% endfor %}
     </div>
-<script src="static/scripts.js"></script>
+{% endif %}
+{% block script %}{% endblock %}
 </body>
 </html>

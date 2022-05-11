@@ -3,7 +3,6 @@
 namespace Sheetpost\API;
 
 use Exception;
-use JetBrains\PhpStorm\ArrayShape;
 use PDO;
 
 class GetPostSheetCount extends Response
@@ -17,10 +16,12 @@ class GetPostSheetCount extends Response
     /**
      * @throws Exception
      */
-    #[ArrayShape(["success" => "bool", "sheet_count" => "int"])]
     protected function getQueryResponse(array $getParameters): array
     {
         $postId = $getParameters['post_id'];
+        if (!ctype_digit($postId)) {
+            return ['success' => false, 'error' => 'post id is not an integer'];
+        }
         return [
             "success" => true,
             "sheet_count" => $this->db->query("
