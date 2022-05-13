@@ -1,13 +1,12 @@
 <?php
 
-namespace Sheetpost\API;
+namespace Sheetpost\Models;
 
-use Sheetpost\Database;
-
-abstract class Response
+abstract class APIResponse
 {
     protected Database $db;
     protected array $parameters;
+    protected string $query;
 
     public function __construct(string $host, string $dbname, string $user, string $password)
     {

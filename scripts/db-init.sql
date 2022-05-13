@@ -1,6 +1,7 @@
 CREATE DATABASE sheetpost;
 CREATE USER 'admin'@'localhost' IDENTIFIED BY 'password';
-GRANT ALL PRIVILEGES ON sheetpost.* TO 'admin'@'localhost';
+GRANT SELECT, INSERT ON sheetpost.* TO 'admin'@'localhost';
+GRANT DELETE ON sheetpost.sheets TO 'admin'@'localhost';
 
 DROP TABLE IF EXISTS sheets CASCADE;
 DROP TABLE IF EXISTS posts  CASCADE;
@@ -15,7 +16,7 @@ CREATE TABLE users
 
 CREATE TABLE posts
 (
-    id       INT           NOT NULL AUTO_INCREMENT,
+    id       INT UNSIGNED  NOT NULL AUTO_INCREMENT,
     username VARCHAR(32)   NOT NULL,
     date     TIMESTAMP     NOT NULL,
     message  VARCHAR(4096) NOT NULL,

@@ -6,8 +6,8 @@ define('TEMPLATES_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'templates');
 
 
 use Dotenv\Dotenv;
-use Sheetpost\Database;
-use Sheetpost\LoggerWrapper;
+use Sheetpost\Models\Database;
+use Sheetpost\Models\LoggerWrapper;
 use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -17,7 +17,7 @@ use Twig\Loader\FilesystemLoader;
 Dotenv::createImmutable(dirname(__DIR__))->load();
 
 $loader = new FilesystemLoader(TEMPLATES_PATH);
-$twig = new Environment($loader, ['cache' => TWIG_CACHE_PATH]);
+$twig = new Environment($loader, ['cache' => $_ENV['TWIG_CACHING'] ? TWIG_CACHE_PATH : false]);
 $logger = new LoggerWrapper("Logger");
 $db = new Database($_ENV['DB_HOST'], $_ENV['DB_NAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
 $db->connect();
@@ -65,8 +65,6 @@ if (str_ends_with($requestedPath, 'sheetpost') && $authorized) {
     die();
 }
 
-$logger->debug("HELLO!");
-
 try {
     $paths = explode('/', $requestedPath);
     $template = end($paths);
@@ -79,6 +77,3 @@ try {
 } catch (LoaderError | RuntimeError | SyntaxError $e) {
     $logger->critical($e);
 }
-
-// TODO: TWIG CACHING
-// TODO: LOGS TO VAR/LOG/...

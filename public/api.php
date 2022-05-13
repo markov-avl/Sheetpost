@@ -3,7 +3,7 @@
 require_once join(DIRECTORY_SEPARATOR, [dirname(__DIR__), 'vendor', 'autoload.php']);
 
 use Dotenv\Dotenv;
-use Sheetpost\LoggerWrapper;
+use Sheetpost\Models\LoggerWrapper;
 
 
 header("Access-Control-Allow-Origin: *");

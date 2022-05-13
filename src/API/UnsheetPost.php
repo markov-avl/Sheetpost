@@ -3,13 +3,16 @@
 namespace Sheetpost\API;
 
 use Exception;
+use Sheetpost\Models\APIResponse;
+use Sheetpost\Models\IntegerParameter;
 
-class UnsheetPost extends Response
+class UnsheetPost extends APIResponse
 {
     public function __construct(string $host, string $dbname, string $user, string $password)
     {
         parent::__construct($host, $dbname, $user, $password);
         $this->parameters = ['username', 'password', 'post_id'];
+        $this->query = 'DELETE FROM sheets WHERE username = :username AND post_id = :post_id';
     }
 
     /**
@@ -17,17 +20,17 @@ class UnsheetPost extends Response
      */
     protected function getQueryResponse(array $getParameters): array
     {
-        $username = $getParameters['username'];
-        $password = $getParameters['password'];
-        $postId = $getParameters['post_id'];
-        if (!ctype_digit($postId)) {
-            return ['success' => false, 'error' => 'post id is not an integer'];
+        $postId = new IntegerParameter($getParameters['post_id'], 'post id', 0, 4294967295);
+        $postIdError = $postId->check();
+        if ($postIdError) {
+            return ['success' => false, 'error' => $postIdError];
         }
-        if ($this->db->isUserExists($username, $password)) {
-            $this->db->query("
-                DELETE FROM sheets
-                    WHERE username='$username' AND post_id=$postId"
-            );
+
+        if ($this->db->isUserExists($getParameters['username'], $getParameters['password'])) {
+            $this->db->query($this->query, [
+                ':username' => $getParameters['username'],
+                ':post_id' => $getParameters['post_id']
+            ]);
             return ['success' => true];
         }
         return ['success' => false, 'error' => 'invalid username or password'];

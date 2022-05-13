@@ -1,3 +1,8 @@
+function capitalize(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+
 document.getElementById('logInModalToggle').addEventListener('show.bs.modal', () => {
     document.getElementById('logInInputUsernameValidationLabel').innerText = ''
     document.getElementById('logInInputPasswordValidationLabel').innerText = ''
@@ -16,10 +21,13 @@ document.getElementById('logInEnter').addEventListener('click', () => {
     formValidationLabel.hidden = true
 
     if (username.value && password.value) {
-        fetch(`/sheetpost/api/is-user-exists?username=${username.value}&password=${password.value}`)
+        fetch('/sheetpost/api/is-user-exists?' + new URLSearchParams({
+            username: username.value,
+            password: password.value
+        }).toString())
             .then(response => response.json())
             .then(data => {
-                if (data['success']) {
+                if ('success' in data && data['success']) {
                     if (data['exists']) {
                         form.submit()
                         return
@@ -56,14 +64,17 @@ document.getElementById('signUpEnter').addEventListener('click', () => {
     formValidationLabel.hidden = true
 
     if (username.value && password.value && password.value === reEnterPassword.value) {
-        fetch(`/sheetpost/api/create-new-user?username=${username.value}&password=${password.value}`)
+        fetch('/sheetpost/api/create-new-user?' + new URLSearchParams({
+            username: username.value,
+            password: password.value
+        }).toString())
             .then(response => response.json())
             .then(data => {
-                if (data['success']) {
+                if ('success' in data && data['success']) {
                     form.submit()
                     return
-                } else if (data['error'] === 'this username is already taken') {
-                    formValidationLabel.innerText = 'This username is already taken'
+                } else if ('error' in data) {
+                    formValidationLabel.innerText = capitalize(data['error'])
                 } else {
                     formValidationLabel.innerText = 'Something went wrong, try again later'
                 }

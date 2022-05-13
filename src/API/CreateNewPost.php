@@ -4,13 +4,16 @@ namespace Sheetpost\API;
 
 use DateTime;
 use Exception;
+use Sheetpost\Models\APIResponse;
+use Sheetpost\Models\StringParameter;
 
-class CreateNewPost extends Response
+class CreateNewPost extends APIResponse
 {
     public function __construct(string $host, string $dbname, string $user, string $password)
     {
         parent::__construct($host, $dbname, $user, $password);
         $this->parameters = ['username', 'password', 'message'];
+        $this->query = 'INSERT INTO posts (username, date, message) VALUES (:username, :date, :message)';
     }
 
     /**
@@ -18,20 +21,20 @@ class CreateNewPost extends Response
      */
     protected function getQueryResponse(array $getParameters): array
     {
-        $username = $getParameters['username'];
-        $password = $getParameters['password'];
-        $message = addcslashes($getParameters['message'], "'");
-
-        if (strlen($message) > 4096) {
-            return ['success' => false, 'error' => 'message is too long (maximum 4096 characters)'];
+        $getParameters['message'] = trim($getParameters['message']);
+        $message = new StringParameter($getParameters['message'], 'message', 4096, false);
+        $messageError = $message->check();
+        if ($messageError) {
+            return ['success' => false, 'error' => $messageError];
         }
-        if ($this->db->isUserExists($username, $password)) {
-            $date = (new DateTime())->format('Y-m-d H:i:s');
-            $this->db->query("
-                INSERT INTO posts (username, date, message)
-                    VALUES ('$username', STR_TO_DATE('$date', '%Y-%m-%d %H:%i:%s'), '$message')"
-            );
-            return ['success' => true];
+
+        if ($this->db->isUserExists($getParameters['username'], $getParameters['password'])) {
+            $this->db->query($this->query, [
+                ':username' => $getParameters['username'],
+                ':date' => (new DateTime())->format('Y-m-d H:i:s'),
+                ':message' => $getParameters['message']
+            ]);
+            return ['success' => true, 'post_id' => $this->db->getLastInsertedId()];
         }
         return ['success' => false, 'error' => 'invalid username or password'];
     }

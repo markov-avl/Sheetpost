@@ -3,13 +3,15 @@
 namespace Sheetpost\API;
 
 use Exception;
+use Sheetpost\Models\APIResponse;
 
-class IsUserExists extends Response
+class IsUserExists extends APIResponse
 {
     public function __construct(string $host, string $dbname, string $user, string $password)
     {
         parent::__construct($host, $dbname, $user, $password);
         $this->parameters = ['username', 'password'];
+        $this->query = '';
     }
 
     /**
