@@ -27,7 +27,7 @@ CREATE TABLE posts
 CREATE TABLE sheets
 (
     username VARCHAR(32)   NOT NULL,
-    post_id  INT           NOT NULL,
+    post_id  INT UNSIGNED  NOT NULL,
     PRIMARY KEY (username, post_id),
     FOREIGN KEY (username) REFERENCES users (username) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (post_id)  REFERENCES posts (id)       ON UPDATE CASCADE ON DELETE CASCADE
