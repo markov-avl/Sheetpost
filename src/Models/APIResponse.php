@@ -2,6 +2,8 @@
 
 namespace Sheetpost\Models;
 
+use Sheetpost\Database\Database;
+
 abstract class APIResponse
 {
     protected Database $db;

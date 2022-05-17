@@ -6,7 +6,7 @@ define('TEMPLATES_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'templates');
 
 
 use Dotenv\Dotenv;
-use Sheetpost\Models\Database;
+use Sheetpost\Database\Database;
 use Sheetpost\Models\LoggerWrapper;
 use Twig\Environment;
 use Twig\Error\LoaderError;

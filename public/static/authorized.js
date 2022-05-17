@@ -31,8 +31,8 @@ function clickOnSheet(sheet) {
     const postId = sheet.id.replace('post', '')
     const username = getCookie('username')
     const password = getCookie('password')
-    const apiRequest = img.style.opacity === '1' ? 'unsheet-post' : 'sheet-post'
-    const opacity = img.style.opacity === '1' ? '.5' : '1'
+    const apiRequest = img.classList.contains('sheeted') ? 'unsheet-post' : 'sheet-post'
+    const classReplace = img.classList.contains('sheeted') ? ['sheeted', 'unsheeted'] : ['unsheeted', 'sheeted']
     fetch(`/sheetpost/api/${apiRequest}?` + new URLSearchParams({
         username: username,
         password: password,
@@ -42,7 +42,7 @@ function clickOnSheet(sheet) {
         .then(data => {
             if ('success' in data && data['success']) {
                 setSheetCount(sheet)
-                img.style.opacity = opacity
+                img.classList.replace(...classReplace)
             }
         })
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Sheetpost\Models;
+namespace Sheetpost\Database;
 
 use Exception;
 use PDO;
@@ -9,23 +9,36 @@ use PDOStatement;
 class Database
 {
     public string $host;
-    public string $dbname;
+    public string $name;
     public string $user;
     public string $password;
-    private PDO|null $connection;
+    private ?PDO $connection;
 
-    public function __construct(string $host, string $dbname, string $user, string $password)
+    public function __construct(string $host, string $name, string $user, string $password)
     {
         $this->host = $host;
-        $this->dbname = $dbname;
+        $this->name = $name;
         $this->user = $user;
         $this->password = $password;
         $this->connection = null;
     }
 
+    public function getConnection(): PDO
+    {
+        if ($this->connection === null) {
+            $this->connection = new PDO("mysql:host=$this->host;dbname=$this->name", $this->user, $this->password);
+        }
+        return $this->connection;
+    }
+
+    public function createUser(string $username, string $password): User
+    {
+        return new User($username, $password);
+    }
+
     public function connect(): void
     {
-        $this->connection = new PDO("mysql:host=$this->host;dbname=$this->dbname", $this->user, $this->password);
+        $this->connection = new PDO("mysql:host=$this->host;dbname=$this->name", $this->user, $this->password);
     }
 
     /**

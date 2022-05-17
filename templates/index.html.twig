@@ -45,28 +45,33 @@
         {% for post in posts %}
             <div class="card w-100 mt-3">
                 <div class="card-body">
-                    <h5 class="card-title">@{{ post["username"] }}</h5>
-                    {% for line in post["message"]|split("\n") %}
+                    <p class="card-text d-flex justify-content-between">
+                        <span class="card-title fs-5 mb-0"><strong>@{{ post.username }}</strong></span>
+                        {% if user is not null and user == post.username %}
+                            <span class="align-items-center">
+                                <!--suppress HtmlUnknownTarget -->
+                                <img src="/sheetpost/static/edit.svg" role="button" class="post-control d-inline-block" alt="" width="20" height="20">
+                                <!--suppress HtmlUnknownTarget -->
+                                <img src="/sheetpost/static/delete.svg" role="button" class="post-control d-inline-block" alt="" width="24" height="24">
+                            </span>
+                        {% endif %}
+                    </p>
+                    {% for line in post.message|split("\n") %}
                         <p class="card-text mb-0">{{ line }}</p>
                     {% endfor %}
                     <p class="card-text mt-2 d-flex justify-content-between">
-                        <small class="text-muted">{{ post["date"] }}</small>
-                        <span id="post{{ post["id"] }}"
+                        <small class="text-muted">{{ post.date }}</small>
+                        <span id="post{{ post.id }}"
                               {% block sheetrole %}{% endblock %}
                               class="sheet d-flex align-self-center">
                             <span class="me-2">
-                                {% if post["sheet_count"] > 0 %}
-                                    {{ post["sheet_count"] }}
+                                {% if post.sheet_count > 0 %}
+                                    {{ post.sheet_count }}
                                 {% endif %}
                             </span>
                             <!--suppress HtmlUnknownTarget -->
                             <img src="/sheetpost/static/logo.png" alt="" width="24" height="24"
-                                 {% if post["sheeted"] %}
-                                     style="opacity: 1"
-                                 {% else %}
-                                     style="opacity: .5"
-                                 {% endif %}
-                                 class="d-inline-block align-text-top">
+                                 class="{% if post.sheeted %}sheeted{% else %}unsheeted{% endif %} d-inline-block align-text-top">
                         </span>
                     </p>
                 </div>

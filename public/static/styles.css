@@ -20,8 +20,25 @@ textarea {
     max-width: 1024px;
 }
 
-.unsheeted {
-    opacity: 0.5;
+.sheet > img {
+    transition: .25s;
+}
+
+.sheeted, .unsheeted:hover {
+    opacity: 1;
+}
+
+.unsheeted, .sheeted:hover {
+    opacity: .5;
+}
+
+.post-control {
+    opacity: .25;
+    transition: .25s;
+}
+
+.post-control:hover {
+    opacity: .5;
 }
 
 @media screen and (min-width: 992px) {
