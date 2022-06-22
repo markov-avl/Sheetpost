@@ -4,10 +4,21 @@ namespace Sheetpost\Database;
 
 use Dotenv\Dotenv;
 use PDO;
+use PDOStatement;
 
 abstract class ActiveRecord
 {
     protected static ?PDO $connection = null;
+
+    protected static function snakeCaseToCamelCase(string $s): string
+    {
+        return lcfirst(implode('', array_map('ucfirst', explode('_', $s))));
+    }
+
+    protected static function camelCaseToSnakeCase(string $s): string
+    {
+        return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $s));
+    }
 
     /**
      * @param object $classInstance
@@ -17,16 +28,11 @@ abstract class ActiveRecord
     {
         $methods = get_class_methods($classInstance);
         $getters = array_filter($methods, function ($method) use ($methods) {
-            return str_starts_with($method, 'get') && in_array('set' . substr($method, 3), $methods);
+            return str_starts_with($method, 'get');
         });
-        var_dump($getters);
         return array_combine(
-            array_map(function ($getter) {
-                return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', substr($getter, 3)));
-            }, $getters),
-            array_map(function ($getter) use ($classInstance) {
-                return $classInstance->$getter();
-            }, $getters)
+            array_map(function ($getter) { return self::camelCaseToSnakeCase(substr($getter, 3)); }, $getters),
+            array_map(function ($getter) use ($classInstance) { return $classInstance->$getter(); }, $getters)
         );
     }
 
@@ -49,6 +55,20 @@ abstract class ActiveRecord
         return self::$connection;
     }
 
+    protected static function wrapRecords(PDOStatement $statement, $className): array
+    {
+        return array_map(function (array $record) use ($className) {
+            $newRecord = [];
+            foreach ($record as $key => $value) {
+                if (str_contains($key, '_')) {
+                    $key = self::snakeCaseToCamelCase($key);
+                }
+                $newRecord[$key] = $value;
+            }
+            return new $className(...$newRecord);
+        }, $statement->fetchAll(PDO::FETCH_ASSOC));
+    }
+
     /**
      * Updates if record exists else inserts
      *
@@ -58,15 +78,20 @@ abstract class ActiveRecord
     {
         $tableName = self::getTableNameByClassName($this::class);
         $columnValues = self::getColumnValuesByClassInstance($this);
-
         $columns = join(', ', array_keys($columnValues));
-        $values = join(', ', array_map(function ($column) { return ":$column"; }, array_keys($columnValues)));
-        $array = join(', ', array_map(function ($column) { return "$column = :$column"; }, array_keys($columnValues)));
+        $values = join(', ', array_map(function ($column) {
+            return ":$column";
+        }, array_keys($columnValues)));
+        $array = join(', ', array_map(function ($column) {
+            return "$column = :$column";
+        }, array_keys($columnValues)));
         $statement = self::getConnection()->prepare(
             "INSERT INTO $tableName ($columns) VALUES ($values) ON DUPLICATE KEY UPDATE $array"
         );
         $statement->execute(
-            array_combine(array_map(function ($column) { return ":$column"; }, array_keys($columnValues)), $columnValues)
+            array_combine(array_map(function ($column) {
+                return ":$column";
+            }, array_keys($columnValues)), $columnValues)
         );
     }
 
@@ -77,29 +102,45 @@ abstract class ActiveRecord
     {
         $tableName = self::getTableNameByClassName($this::class);
         $columnValues = self::getColumnValuesByClassInstance($this);
-
-        $array = join(' AND ', array_map(function ($column) { return "$column = :$column"; }, array_keys($columnValues)));
+        $array = join(' AND ', array_map(function ($column) {
+            return "$column = :$column";
+        }, array_keys($columnValues)));
         $statement = self::getConnection()->prepare("DELETE FROM $tableName WHERE $array");
         $statement->execute(
-            array_combine(array_map(function ($column) { return ":$column"; }, array_keys($columnValues)), $columnValues)
+            array_combine(array_map(function ($column) {
+                return ":$column";
+            }, array_keys($columnValues)), $columnValues)
         );
     }
 
     /**
      * @param string $className
      * @param array $primaryKeys
-     * @return ActiveRecord
+     * @return mixed
      */
-    protected static function getByPrimaryKeys(string $className, array $primaryKeys): ActiveRecord
+    protected static function getByPrimaryKeys(string $className, array $primaryKeys): mixed
+    {
+        return self::getByFields($className, $primaryKeys)[0];
+    }
+
+    /**
+     * @param string $className
+     * @param array $fields
+     * @return array
+     */
+    protected static function getByFields(string $className, array $fields): array
     {
         $tableName = self::getTableNameByClassName($className);
-
-        $array = join(' AND ', array_map(function ($column) { return "$column = :$column"; }, array_keys($primaryKeys)));
+        $array = join(' AND ', array_map(function ($column) {
+            return "$column = :$column";
+        }, array_keys($fields)));
         $statement = self::getConnection()->prepare("SELECT * FROM $tableName WHERE $array");
         $statement->execute(
-            array_combine(array_map(function ($column) { return ":$column"; }, array_keys($primaryKeys)), $primaryKeys)
+            array_combine(array_map(function ($column) {
+                return ":$column";
+            }, array_keys($fields)), $fields)
         );
-        return new $className(...$statement->fetch(PDO::FETCH_ASSOC));
+        return self::wrapRecords($statement, $className);
     }
 
     public static abstract function all(): array;
@@ -108,8 +149,6 @@ abstract class ActiveRecord
     {
         $tableName = self::getTableNameByClassName($className);
         $statement = self::getConnection()->query("SELECT * FROM $tableName");
-        return array_map(function (array $record) use ($className) {
-            return new $className(...$record);
-        }, $statement->fetchAll(PDO::FETCH_ASSOC));
+        return self::wrapRecords($statement, $className);
     }
 }

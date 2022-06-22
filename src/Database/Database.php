@@ -79,7 +79,7 @@ class Database
     /**
      * @throws Exception
      */
-    public function getAllPosts(string|null $authorizedUser = null): array
+    public function getAllPosts(?string $authorizedUser = null): array
     {
         $sheeted = $authorizedUser
             ? '(SELECT COUNT(*) FROM sheets WHERE posts.id = sheets.post_id AND sheets.username = :username)' : 1;

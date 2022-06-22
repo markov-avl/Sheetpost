@@ -4,8 +4,8 @@ namespace Sheetpost\Database;
 
 class User extends ActiveRecord
 {
-    private string $username;
-    private string $password;
+    public string $username;
+    public string $password;
 
     public function __construct(string $username, string $password)
     {
@@ -21,7 +21,7 @@ class User extends ActiveRecord
         return parent::finaAll(self::class);
     }
 
-    public static function getByUsername(string $username): User
+    public static function getById(string $username): User
     {
         return parent::getByPrimaryKeys(self::class, [
             'username' => $username
@@ -42,21 +42,5 @@ class User extends ActiveRecord
     public function getPassword(): string
     {
         return $this->password;
-    }
-
-    /**
-     * @param string $username
-     */
-    public function setUsername(string $username): void
-    {
-        $this->username = $username;
-    }
-
-    /**
-     * @param string $password
-     */
-    public function setPassword(string $password): void
-    {
-        $this->password = $password;
     }
 }
