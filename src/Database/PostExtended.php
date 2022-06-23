@@ -32,8 +32,8 @@ class PostExtended extends ActiveRecord
             ? '(SELECT COUNT(*) FROM sheets WHERE id = post_id AND sheets.username = :username)' : 1;
         $statement = parent::getConnection()->prepare("
             SELECT *,
-                   (SELECT COUNT(*) FROM sheets WHERE id = post_id) as sheet_count,
-                   $sheeted as sheeted
+                   (SELECT COUNT(*) FROM sheets WHERE id = post_id) AS sheet_count,
+                   $sheeted AS sheeted
             FROM posts
             ORDER BY date DESC
         ");
