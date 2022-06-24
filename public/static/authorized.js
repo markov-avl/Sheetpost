@@ -47,9 +47,46 @@ function clickOnSheet(sheet) {
         })
 }
 
+
+function clickOnEdit(sheet) {
+    const img = sheet.getElementsByTagName('img')[0]
+    const postId = sheet.id.replace('post', '')
+    const username = getCookie('username')
+    const password = getCookie('password')
+    const apiRequest = img.classList.contains('sheeted') ? 'unsheet-post' : 'sheet-post'
+    const classReplace = img.classList.contains('sheeted') ? ['sheeted', 'unsheeted'] : ['unsheeted', 'sheeted']
+    fetch(`/sheetpost/api/${apiRequest}?` + new URLSearchParams({
+        username: username,
+        password: password,
+        post_id: postId
+    }).toString())
+        .then(response => response.json())
+        .then(data => {
+            if ('success' in data && data['success']) {
+                setSheetCount(sheet)
+                img.classList.replace(...classReplace)
+            }
+        })
+}
+
+
 function setSheetListeners() {
     [...document.getElementsByClassName('sheet')].forEach(sheet => {
         sheet.addEventListener('click', () => { clickOnSheet(sheet) })
+    })
+}
+
+
+function setEditListeners() {
+    [...document.getElementsByClassName('edit')].forEach(edit => {
+        edit.addEventListener('click', () => { clickOnEdit(edit) })
+    })
+}
+
+
+function setDeleteListeners() {
+    [...document.getElementsByClassName('delete')].forEach(del => {
+        del.addEventListener('click', () => { clickOnDelete(del) })
     })
 }
 
@@ -102,3 +139,5 @@ document.getElementById('newPostCreate').addEventListener('click', () => {
 
 
 setSheetListeners()
+setEditListeners()
+setDeleteListeners()

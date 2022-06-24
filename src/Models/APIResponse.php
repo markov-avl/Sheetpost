@@ -2,17 +2,13 @@
 
 namespace Sheetpost\Models;
 
-use Sheetpost\Database\Database;
-
 abstract class APIResponse
 {
-    protected Database $db;
     protected array $parameters;
-    protected string $query;
 
-    public function __construct(string $host, string $dbname, string $user, string $password)
+    public function __construct(array $parameters)
     {
-        $this->db = new Database($host, $dbname, $user, $password);
+        $this->parameters = $parameters;
     }
 
     private function hasAllGetParameters(array $getParameters): bool
@@ -28,7 +24,6 @@ abstract class APIResponse
     public function getResponse(array $getParameters): array
     {
         if ($this->hasAllGetParameters($getParameters)) {
-            $this->db->connect();
             return $this->getQueryResponse($getParameters);
         }
         return ['success' => false, 'error' => 'missing parameters'];

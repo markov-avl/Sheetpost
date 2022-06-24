@@ -3,15 +3,14 @@
 namespace Sheetpost\API;
 
 use Exception;
+use Sheetpost\Database\User;
 use Sheetpost\Models\APIResponse;
 
 class IsUserExists extends APIResponse
 {
-    public function __construct(string $host, string $dbname, string $user, string $password)
+    public function __construct()
     {
-        parent::__construct($host, $dbname, $user, $password);
-        $this->parameters = ['username', 'password'];
-        $this->query = '';
+        parent::__construct(['username', 'password']);
     }
 
     /**
@@ -21,7 +20,10 @@ class IsUserExists extends APIResponse
     {
         return [
             "success" => true,
-            "exists" => $this->db->isUserExists($getParameters['username'], $getParameters['password'])
+            "exists" => isset(User::getByFields([
+                    'username' => $getParameters['username'],
+                    'password' => $getParameters['password']
+                ])[0])
         ];
     }
 }

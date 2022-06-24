@@ -2,6 +2,9 @@
 
 namespace Sheetpost\Database;
 
+use PDO;
+use PDOStatement;
+
 class Sheet extends ActiveRecord
 {
     public string $username;
@@ -16,57 +19,77 @@ class Sheet extends ActiveRecord
     /**
      * @return Sheet[]
      */
+    protected static function wrapRecords(PDOStatement $statement): array
+    {
+        return array_map(function (array $record) {
+            return new Sheet($record['username'], $record['post_id']);
+        }, $statement->fetchAll(PDO::FETCH_ASSOC));
+    }
+
+    /**
+     * @return Sheet[]
+     */
     public static function all(): array
     {
-        return parent::finaAll(self::class);
+        $statement = self::getConnection()->prepare("
+            SELECT *
+            FROM sheets;
+        ");
+        $statement->execute();
+        return self::wrapRecords($statement);
     }
 
-    /**
-     * @param string $username
-     * @param int $postId
-     * @return Sheet
-     */
-    public static function getById(string $username, int $postId): Sheet
+    public static function getById(string $username, int $postId): ?Sheet
     {
-        return parent::getByPrimaryKeys(self::class, [
-            'username' => $username,
-            'post_id' => $postId
-        ]);
+        $statement = self::getConnection()->prepare("
+            SELECT *
+            FROM sheets
+            WHERE username = :username
+              AND post_id = :post_id;
+        ");
+        $statement->execute([':username' => $username, ':post_id' => $postId]);
+        return self::wrapRecords($statement)[0] ?? null;
+    }
+
+    public function save(): void
+    {
+        $statement = self::getConnection()->prepare("
+            INSERT INTO sheets (username, post_id)
+            VALUES (:username, :post_id)
+            ON DUPLICATE KEY UPDATE username = :username, post_id = :post_id;
+        ");
+        $statement->execute([':username' => $this->username, ':post_id' => $this->postId]);
+    }
+
+    public function remove(): void
+    {
+        $statement = self::getConnection()->prepare("
+            DELETE FROM sheets
+            WHERE username = :username
+              AND post_id = :post_id;
+        ");
+        $statement->execute([':username' => $this->username, ':post_id' => $this->postId]);
     }
 
     /**
+     * @param array $fields
      * @return Sheet[]
      */
-    public static function getByUsername(string $username): array
+    public static function getByFields(array $fields): array
     {
-        return parent::getByFields(self::class, [
-            'username' => $username
-        ]);
-    }
-
-    /**
-     * @return Sheet[]
-     */
-    public static function getByPostId(int $postId): array
-    {
-        return parent::getByFields(self::class, [
-            'post_id' => $postId
-        ]);
-    }
-
-    /**
-     * @return string
-     */
-    public function getUsername(): string
-    {
-        return $this->username;
-    }
-
-    /**
-     * @return int
-     */
-    public function getPostId(): int
-    {
-        return $this->postId;
+        $array = join(' AND ', array_map(function ($column) {
+            return "$column = :$column";
+        }, array_keys($fields)));
+        $statement = self::getConnection()->prepare("
+            SELECT *
+            FROM sheets
+            WHERE $array
+        ");
+        $statement->execute(
+            array_combine(array_map(function ($column) {
+                return ":$column";
+            }, array_keys($fields)), $fields)
+        );
+        return self::wrapRecords($statement);
     }
 }

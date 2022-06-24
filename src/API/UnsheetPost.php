@@ -3,16 +3,16 @@
 namespace Sheetpost\API;
 
 use Exception;
+use Sheetpost\Database\Sheet;
+use Sheetpost\Database\User;
 use Sheetpost\Models\APIResponse;
 use Sheetpost\Models\IntegerParameter;
 
 class UnsheetPost extends APIResponse
 {
-    public function __construct(string $host, string $dbname, string $user, string $password)
+    public function __construct()
     {
-        parent::__construct($host, $dbname, $user, $password);
-        $this->parameters = ['username', 'password', 'post_id'];
-        $this->query = 'DELETE FROM sheets WHERE username = :username AND post_id = :post_id';
+        parent::__construct(['username', 'password', 'post_id']);
     }
 
     /**
@@ -26,11 +26,9 @@ class UnsheetPost extends APIResponse
             return ['success' => false, 'error' => $postIdError];
         }
 
-        if ($this->db->isUserExists($getParameters['username'], $getParameters['password'])) {
-            $this->db->query($this->query, [
-                ':username' => $getParameters['username'],
-                ':post_id' => $getParameters['post_id']
-            ]);
+        if (User::getByFields(['username' => $getParameters['username'], 'password' => $getParameters['password']])) {
+            $sheet = new Sheet($getParameters['username'], $getParameters['post_id']);
+            $sheet->remove();
             return ['success' => true];
         }
         return ['success' => false, 'error' => 'invalid username or password'];

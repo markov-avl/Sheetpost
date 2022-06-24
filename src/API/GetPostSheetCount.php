@@ -3,16 +3,15 @@
 namespace Sheetpost\API;
 
 use Exception;
+use Sheetpost\Database\PostExtended;
 use Sheetpost\Models\APIResponse;
 use Sheetpost\Models\IntegerParameter;
 
 class GetPostSheetCount extends APIResponse
 {
-    public function __construct(string $host, string $dbname, string $user, string $password)
+    public function __construct()
     {
-        parent::__construct($host, $dbname, $user, $password);
-        $this->parameters = ['post_id'];
-        $this->query = 'SELECT * FROM sheets WHERE sheets.post_id = :post_id';
+        parent::__construct(['post_id']);
     }
 
     /**
@@ -28,7 +27,7 @@ class GetPostSheetCount extends APIResponse
 
         return [
             'success' => true,
-            'sheet_count' => $this->db->query($this->query, [':post_id' => $getParameters['post_id']])->rowCount()
+            'sheet_count' => PostExtended::getByFields(['id' => $getParameters['post_id']])[0]->sheetCount ?? -1
         ];
     }
 }
