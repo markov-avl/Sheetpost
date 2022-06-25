@@ -30,20 +30,20 @@ $requestedPath = str_ends_with($requestedPath, '/') ? rtrim($requestedPath, '/')
 if (str_ends_with($requestedPath, 'login')) {
     if (isset($_POST['username'], $_POST['password']) &&
         User::getByFields(['username' => $_POST['username'], 'password' => $_POST['password']]) !== null) {
-        setcookie('username', $_POST['username'], path: '/sheetpost-v2');
-        setcookie('password', $_POST['password'], path: '/sheetpost-v2');
-        header('Location: /sheetpost-v2/home');
+        setcookie('username', $_POST['username'], path: '/sheetpost-v3');
+        setcookie('password', $_POST['password'], path: '/sheetpost-v3');
+        header('Location: /sheetpost-v3/home');
     } else {
-        header('Location: /sheetpost-v2');
+        header('Location: /sheetpost-v3');
     }
     die();
 }
 
 // Если была отправлена форма на выход
 if (str_ends_with($requestedPath, 'logout')) {
-    setcookie('username', expires_or_options: -1, path: '/sheetpost-v2');
-    setcookie('password', expires_or_options: -1, path: '/sheetpost-v2');
-    header('Location: /sheetpost-v2');
+    setcookie('username', expires_or_options: -1, path: '/sheetpost-v3');
+    setcookie('password', expires_or_options: -1, path: '/sheetpost-v3');
+    header('Location: /sheetpost-v3');
     die();
 }
 
@@ -52,30 +52,36 @@ $authorized = isset($_COOKIE['username'], $_COOKIE['password']) &&
 
 
 // Перенаправление на главную страницу, если пользователь не авторизован (если были подменены значения кук)
-if (!str_ends_with($requestedPath, 'sheetpost-v2') && !$authorized) {
-    setcookie('username', expires_or_options: -1, path: '/sheetpost-v2');
-    setcookie('password', expires_or_options: -1, path: '/sheetpost-v2');
-    header('Location: /sheetpost-v2');
+if (!str_ends_with($requestedPath, 'sheetpost-v3') && !$authorized) {
+    setcookie('username', expires_or_options: -1, path: '/sheetpost-v3');
+    setcookie('password', expires_or_options: -1, path: '/sheetpost-v3');
+    header('Location: /sheetpost-v3');
     die();
 }
 
 // Перенаправление на главную страницу авторизованного пользователя, если он не находится сейчас на ней
-if (str_ends_with($requestedPath, 'sheetpost-v2') && $authorized) {
-    header('Location: /sheetpost-v2/home');
+if (str_ends_with($requestedPath, 'sheetpost-v3') && $authorized) {
+    header('Location: /sheetpost-v3/home');
     die();
 }
 
 try {
     $paths = explode('/', $requestedPath);
     $template = end($paths);
+    if (isset($_COOKIE['username'])) {
+        if ($template === 'myposts') {
+            $posts = PostExtended::getByUsername($_COOKIE['username']);
+        } elseif ($template === 'mysheets') {
+            $posts = PostExtended::getByUserSheets($_COOKIE['username']);
+        } else {
+            $posts = PostExtended::allAuthorized($_COOKIE['username']);
+        }
+    } else {
+        $posts = PostExtended::all();
+    }
     echo $twig->render("$template.html.twig", [
         "user" => $_COOKIE['username'] ?? null,
-//        "posts" => isset($_COOKIE['username']) && $template === 'myposts'
-//            ? $db->getUserPosts($_COOKIE['username'])
-//            : $db->getAllPosts($_COOKIE['username'] ?? null)
-        "posts" => isset($_COOKIE['username']) && $template === 'myposts'
-            ? PostExtended::getByUsername($_COOKIE['username'])
-            : (isset($_COOKIE['username']) ? PostExtended::allAuthorized($_COOKIE['username']) : PostExtended::all())
+        "posts" => $posts
     ]);
 } catch (LoaderError | RuntimeError | SyntaxError $e) {
     $logger->critical($e);

@@ -19,7 +19,7 @@ function insertAfter(newNode, existingNode) {
 
 function setSheetCount(sheet) {
     const postId = sheet.id.replace('postSheet', '')
-    fetch('/sheetpost-v2/api/get-post-sheet-count?' + new URLSearchParams({
+    fetch('/sheetpost-v3/api/get-post-sheet-count?' + new URLSearchParams({
         post_id: postId
     }).toString())
         .then(response => response.json())
@@ -36,7 +36,7 @@ function clickOnSheet(sheet) {
     const postId = sheet.id.replace('postSheet', '')
     const apiRequest = img.classList.contains('sheeted') ? 'unsheet-post' : 'sheet-post'
     const classReplace = img.classList.contains('sheeted') ? ['sheeted', 'unsheeted'] : ['unsheeted', 'sheeted']
-    fetch(`/sheetpost-v2/api/${apiRequest}?` + new URLSearchParams({
+    fetch(`/sheetpost-v3/api/${apiRequest}?` + new URLSearchParams({
         username: getCookie('username'), password: getCookie('password'), post_id: postId
     }).toString())
         .then(response => response.json())
@@ -64,7 +64,7 @@ function updatePost(postId) {
     formValidationLabel.hidden = true
 
     if (messageText && messageText.length <= 4096) {
-        fetch('/sheetpost-v2/api/edit-post?' + new URLSearchParams({
+        fetch('/sheetpost-v3/api/edit-post?' + new URLSearchParams({
             username: getCookie('username'), password: getCookie('password'), post_id: postId, message: messageText
         }).toString())
             .then(response => response.json())
@@ -99,7 +99,7 @@ function updatePost(postId) {
 
 
 function deletePost(postId) {
-    fetch(`/sheetpost-v2/api/delete-post?` + new URLSearchParams({
+    fetch(`/sheetpost-v3/api/delete-post?` + new URLSearchParams({
         username: getCookie('username'), password: getCookie('password'), post_id: postId
     }).toString())
         .then(response => response.json())
@@ -173,7 +173,7 @@ document.getElementById('newPostCreate').addEventListener('click', () => {
     formValidationLabel.hidden = true
 
     if (messageText && messageText.length <= 4096) {
-        fetch('/sheetpost-v2/api/create-new-post?' + new URLSearchParams({
+        fetch('/sheetpost-v3/api/create-new-post?' + new URLSearchParams({
             username: getCookie('username'), password: getCookie('password'), message: messageText
         }).toString())
             .then(response => response.json())

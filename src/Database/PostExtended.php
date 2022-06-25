@@ -103,6 +103,28 @@ class PostExtended extends ActiveRecord
         return self::wrapRecords($statement);
     }
 
+    /**
+     * @return PostExtended[]
+     */
+    public static function getByUserSheets(string $username): array
+    {
+        $statement = parent::getConnection()->prepare("
+            SELECT *,
+                   (SELECT COUNT(*)
+                    FROM sheets
+                    WHERE id = post_id) AS sheet_count,
+                   TRUE AS sheeted
+            FROM posts
+            WHERE EXISTS(SELECT 1
+                         FROM sheets
+                         WHERE id = post_id
+                           AND sheets.username = :username)
+            ORDER BY date DESC
+        ");
+        $statement->execute([':username' => $username]);
+        return self::wrapRecords($statement);
+    }
+
     public function save(): void
     {
         throw new BadMethodCallException();

@@ -15,7 +15,7 @@ abstract class ActiveRecord
         if (self::$connection === null) {
             Dotenv::createImmutable(dirname(__DIR__, 2))->load();
             self::$connection = new PDO(
-                "mysql:host={$_ENV['DB_HOST']};dbname={$_ENV['DB_NAME']}",
+                "mysql:host={$_ENV['DB_HOST']};dbname={$_ENV['DB_NAME']};port={$_ENV['DB_PORT']}",
                 $_ENV['DB_USER'],
                 $_ENV['DB_PASSWORD']
             );

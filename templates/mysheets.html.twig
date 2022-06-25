@@ -1,8 +1,8 @@
 {% extends 'index.html.twig' %}
 
-{% block title %}Home{% endblock %}
+{% block title %}My sheets{% endblock %}
 
-{% block noposts %}It looks like no one has any posts :(<br>Be the first!{% endblock %}
+{% block noposts %}It looks like you didn't sheet any posts :({% endblock %}
 
 {% block script %}
     <!--suppress HtmlUnknownTarget -->
@@ -13,7 +13,7 @@
 
 {% block myposts %}
     <a class="nav-link" href="/sheetpost-v3/myposts">My posts</a>
-    <a class="nav-link" href="/sheetpost-v3/mysheets">My sheets</a>
+    <a class="nav-link active" href="/sheetpost-v3/mysheets">My sheets</a>
 {% endblock %}
 
 {% block buttons %}
