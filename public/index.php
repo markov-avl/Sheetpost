@@ -30,20 +30,20 @@ $requestedPath = str_ends_with($requestedPath, '/') ? rtrim($requestedPath, '/')
 // Если была отправлена форма на вход и правильно введены пользователь и пароль
 if (str_ends_with($requestedPath, 'login')) {
     if (isset($_POST['username'], $_POST['password']) && $db->isUserExists($_POST['username'], $_POST['password'])) {
-        setcookie('username', $_POST['username'], path: '/sheetpost');
-        setcookie('password', $_POST['password'], path: '/sheetpost');
-        header('Location: /sheetpost/home');
+        setcookie('username', $_POST['username'], path: '/sheetpost-v2');
+        setcookie('password', $_POST['password'], path: '/sheetpost-v2');
+        header('Location: /sheetpost-v2/home');
     } else {
-        header('Location: /sheetpost');
+        header('Location: /sheetpost-v2');
     }
     die();
 }
 
 // Если была отправлена форма на выход
 if (str_ends_with($requestedPath, 'logout')) {
-    setcookie('username', expires_or_options: -1, path: '/sheetpost');
-    setcookie('password', expires_or_options: -1, path: '/sheetpost');
-    header('Location: /sheetpost');
+    setcookie('username', expires_or_options: -1, path: '/sheetpost-v2');
+    setcookie('password', expires_or_options: -1, path: '/sheetpost-v2');
+    header('Location: /sheetpost-v2');
     die();
 }
 
@@ -52,16 +52,16 @@ $authorized = isset($_COOKIE['username'], $_COOKIE['password']) &&
 
 
 // Перенаправление на главную страницу, если пользователь не авторизован (если были подменены значения кук)
-if (!str_ends_with($requestedPath, 'sheetpost') && !$authorized) {
-    setcookie('username', expires_or_options: -1, path: '/sheetpost');
-    setcookie('password', expires_or_options: -1, path: '/sheetpost');
-    header('Location: /sheetpost');
+if (!str_ends_with($requestedPath, 'sheetpost-v2') && !$authorized) {
+    setcookie('username', expires_or_options: -1, path: '/sheetpost-v2');
+    setcookie('password', expires_or_options: -1, path: '/sheetpost-v2');
+    header('Location: /sheetpost-v2');
     die();
 }
 
 // Перенаправление на главную страницу авторизованного пользователя, если он не находится сейчас на ней
-if (str_ends_with($requestedPath, 'sheetpost') && $authorized) {
-    header('Location: /sheetpost/home');
+if (str_ends_with($requestedPath, 'sheetpost-v2') && $authorized) {
+    header('Location: /sheetpost-v2/home');
     die();
 }
 
