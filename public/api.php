@@ -15,7 +15,7 @@ Dotenv::createImmutable(dirname(__DIR__))->load();
 
 $logger = new LoggerWrapper("Logger");
 
-$requestedPath = rtrim(explode('?', $_SERVER['REQUEST_URI'])[0], '/');
+$requestedPath = rtrim(explode('?', str_replace('-v2', '', $_SERVER['REQUEST_URI']))[0], '/');
 $responseClass = str_replace(['/ ', '- ', 'Api'], ['\\', '', 'API'], ucwords(str_replace(['/', '-'], ['/ ', '- '], $requestedPath)));
 
 if (class_exists($responseClass)) {
