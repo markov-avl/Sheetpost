@@ -3,18 +3,16 @@
 namespace Sheetpost\API;
 
 use Exception;
-use PDOException;
+use Sheetpost\Database\User;
 use Sheetpost\Models\APIResponse;
 use Sheetpost\Models\StringParameter;
 
 
 class CreateNewUser extends APIResponse
 {
-    public function __construct(string $host, string $dbname, string $user, string $password)
+    public function __construct()
     {
-        parent::__construct($host, $dbname, $user, $password);
-        $this->parameters = ['username', 'password'];
-        $this->query = 'INSERT INTO users (username, password) VALUES (:username, :password)';
+        parent::__construct(['username', 'password']);
     }
 
     /**
@@ -32,14 +30,11 @@ class CreateNewUser extends APIResponse
             }
         }
 
-        try {
-            $this->db->query($this->query, [
-                ':username' => $getParameters['username'],
-                ':password' => $getParameters['password']
-            ]);
-            return ['success' => true];
-        } catch (PDOException) {
+        if (User::getById($getParameters['username'])) {
             return ['success' => false, 'error' => 'this username is already taken'];
         }
+        $newUser = new User($getParameters['username'], $getParameters['password']);
+        $newUser->save();
+        return ['success' => true];
     }
 }

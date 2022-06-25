@@ -3,6 +3,8 @@
 namespace Sheetpost\Database;
 
 use BadMethodCallException;
+use PDO;
+use PDOStatement;
 
 class PostExtended extends ActiveRecord
 {
@@ -26,36 +28,79 @@ class PostExtended extends ActiveRecord
     /**
      * @return PostExtended[]
      */
-    public static function all(?string $authorizedUser = null): array
+    protected static function wrapRecords(PDOStatement $statement): array
     {
-        $sheeted = $authorizedUser
-            ? '(SELECT COUNT(*) FROM sheets WHERE id = post_id AND sheets.username = :username)' : 1;
-        $statement = parent::getConnection()->prepare("
-            SELECT *,
-                   (SELECT COUNT(*) FROM sheets WHERE id = post_id) as sheet_count,
-                   $sheeted as sheeted
-            FROM posts
-            ORDER BY date DESC
-        ");
-        $statement->execute($authorizedUser ? [':username' => $authorizedUser] : []);
-        return parent::wrapRecords($statement, self::class);
+        return array_map(function (array $record) {
+            return new PostExtended(
+                $record['id'],
+                $record['username'],
+                $record['date'],
+                $record['message'],
+                $record['sheet_count'],
+                $record['sheeted']
+            );
+        }, $statement->fetchAll(PDO::FETCH_ASSOC));
     }
 
     /**
-     * @return Post[]
+     * @return PostExtended[]
+     */
+    public static function all(): array
+    {
+        $statement = parent::getConnection()->prepare("
+            SELECT *,
+                   (SELECT COUNT(*)
+                    FROM sheets
+                    WHERE id = post_id) AS sheet_count,
+                   TRUE AS sheeted
+            FROM posts
+            ORDER BY date DESC
+        ");
+        $statement->execute();
+        return self::wrapRecords($statement);
+    }
+
+    /**
+     * @return PostExtended[]
+     */
+    public static function allAuthorized(string $authorizedUser): array
+    {
+        $statement = parent::getConnection()->prepare("
+            SELECT *,
+                   (SELECT COUNT(*)
+                    FROM sheets
+                    WHERE id = post_id) AS sheet_count,
+                   EXISTS(SELECT 1
+                          FROM sheets
+                          WHERE id = post_id
+                            AND sheets.username = :username) AS sheeted
+            FROM posts
+            ORDER BY date DESC
+        ");
+        $statement->execute([':username' => $authorizedUser]);
+        return self::wrapRecords($statement);
+    }
+
+    /**
+     * @return PostExtended[]
      */
     public static function getByUsername(string $username): array
     {
         $statement = parent::getConnection()->prepare("
             SELECT *,
-                   (SELECT COUNT(*) FROM sheets WHERE id = post_id) as sheet_count,
-                   (SELECT COUNT(*) FROM sheets WHERE id = post_id AND sheets.username = :username) as sheeted
+                   (SELECT COUNT(*)
+                    FROM sheets
+                    WHERE id = post_id) AS sheet_count,
+                   EXISTS(SELECT 1
+                          FROM sheets
+                          WHERE id = post_id
+                            AND sheets.username = :username) AS sheeted
             FROM posts
             WHERE username = :username
             ORDER BY date DESC
         ");
         $statement->execute([':username' => $username]);
-        return parent::wrapRecords($statement, self::class);
+        return self::wrapRecords($statement);
     }
 
     public function save(): void
@@ -68,51 +113,28 @@ class PostExtended extends ActiveRecord
         throw new BadMethodCallException();
     }
 
-    /**
-     * @return int
-     */
-    public function getId(): int
+    public static function getByFields(array $fields): array
     {
-        return $this->id;
-    }
-
-    /**
-     * @return string
-     */
-    public function getUsername(): string
-    {
-        return $this->username;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDate(): string
-    {
-        return $this->date;
-    }
-
-    /**
-     * @return string
-     */
-    public function getMessage(): string
-    {
-        return $this->message;
-    }
-
-    /**
-     * @return int
-     */
-    public function getSheetCount(): int
-    {
-        return $this->sheetCount;
-    }
-
-    /**
-     * @return int
-     */
-    public function getSheeted(): int
-    {
-        return $this->sheeted;
+        $array = join(' AND ', array_map(function ($column) {
+            return "$column = :$column";
+        }, array_keys($fields)));
+        $statement = parent::getConnection()->prepare("
+            SELECT *,
+                   (SELECT COUNT(*)
+                    FROM sheets
+                    WHERE id = post_id) AS sheet_count,
+                   EXISTS(SELECT 1
+                          FROM sheets
+                          WHERE id = post_id) AS sheeted
+            FROM posts
+            WHERE $array
+            ORDER BY date DESC
+        ");
+        $statement->execute(
+            array_combine(array_map(function ($column) {
+                return ":$column";
+            }, array_keys($fields)), $fields)
+        );
+        return self::wrapRecords($statement);
     }
 }

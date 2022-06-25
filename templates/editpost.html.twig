@@ -1,0 +1,24 @@
+<div class="modal fade" id="editPostModal" tabindex="-1" aria-labelledby="editPostModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPostModalLabel">Edit post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-1">
+                        <label for="editPostMessageText" class="col-form-label">Message:</label>
+                        <textarea class="form-control" id="editPostMessageText"></textarea>
+                    </div>
+                    <div id="editPostMessageTextValidationLabel" class="mb-2 text-danger"></div>
+                </form>
+                <div id="editPostFormValidationLabel" class="mb-2 text-danger"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="editPostCancel" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button id="editPostUpdate" class="btn btn-primary">Update</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -22,7 +22,8 @@
                          class="d-inline-block align-text-top">
                     SheetPost
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarNavAltMarkup"
                         aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -43,25 +44,29 @@
 {% else %}
     <div class="posts m-0 m-auto pb-3">
         {% for post in posts %}
-            <div class="card w-100 mt-3">
+            <div id="post{{ post.id }}" class="card w-100 mt-3">
                 <div class="card-body">
-                    <p class="card-text d-flex justify-content-between">
+                    <p class="card-text username d-flex justify-content-between">
                         <span class="card-title fs-5 mb-0"><strong>@{{ post.username }}</strong></span>
                         {% if user is not null and user == post.username %}
                             <span class="align-items-center">
                                 <!--suppress HtmlUnknownTarget -->
-                                <img src="/sheetpost/static/edit.svg" role="button" class="post-control d-inline-block" alt="" width="20" height="20">
+                                <img src="/sheetpost/static/edit.svg" class="post-control edit d-inline-block"
+                                     data-bs-toggle="modal" role="button" data-bs-whatever="post{{ post.id }}"
+                                     data-bs-target="#editPostModal" alt="" width="20" height="20">
                                 <!--suppress HtmlUnknownTarget -->
-                                <img src="/sheetpost/static/delete.svg" role="button" class="post-control d-inline-block" alt="" width="24" height="24">
+                                <img src="/sheetpost/static/delete.svg" class="post-control edit d-inline-block"
+                                     data-bs-toggle="modal" role="button" data-bs-whatever="post{{ post.id }}"
+                                     data-bs-target="#deletePostModal" alt="" width="24" height="24">
                             </span>
                         {% endif %}
                     </p>
                     {% for line in post.message|split("\n") %}
-                        <p class="card-text mb-0">{{ line }}</p>
+                        <p class="card-text line mb-0">{{ line }}</p>
                     {% endfor %}
-                    <p class="card-text mt-2 d-flex justify-content-between">
+                    <p class="card-text date mt-2 d-flex justify-content-between">
                         <small class="text-muted">{{ post.date }}</small>
-                        <span id="post{{ post.id }}"
+                        <span id="postSheet{{ post.id }}"
                               {% block sheetrole %}{% endblock %}
                               class="sheet d-flex align-self-center">
                             <span class="me-2">
@@ -71,13 +76,14 @@
                             </span>
                             <!--suppress HtmlUnknownTarget -->
                             <img src="/sheetpost/static/logo.png" alt="" width="24" height="24"
-                                 class="{% if post.sheeted %}sheeted{% else %}unsheeted{% endif %} d-inline-block align-text-top">
+                                 class="{% if user is null %}sheet{% elseif post.sheeted %}sheeted{% else %}unsheeted{% endif %} d-inline-block align-text-top">
                         </span>
                     </p>
                 </div>
             </div>
         {% endfor %}
     </div>
+    {% block postcontrol %}{% endblock %}
 {% endif %}
 {% block script %}{% endblock %}
 </body>

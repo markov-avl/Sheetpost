@@ -2,14 +2,17 @@
 
 namespace Sheetpost\Database;
 
+use PDO;
+use PDOStatement;
+
 class Post extends ActiveRecord
 {
-    public int $id;
+    public ?int $id;
     public string $username;
     public string $date;
     public string $message;
 
-    public function __construct(int $id, string $username, string $date, string $message)
+    public function __construct(?int $id, string $username, string $date, string $message)
     {
         $this->id = $id;
         $this->username = $username;
@@ -20,57 +23,83 @@ class Post extends ActiveRecord
     /**
      * @return Post[]
      */
-    public static function all(): array
+    protected static function wrapRecords(PDOStatement $statement): array
     {
-        return parent::finaAll(self::class);
-    }
-
-    public static function getById(int $id): Post
-    {
-        return parent::getByPrimaryKeys(self::class, [
-            'id' => $id
-        ]);
+        return array_map(function (array $record) {
+            return new Post($record['id'], $record['username'], $record['date'], $record['message']);
+        }, $statement->fetchAll(PDO::FETCH_ASSOC));
     }
 
     /**
      * @return Post[]
      */
-    public static function getByUsername(string $username): array
+    public static function all(): array
     {
-        return parent::getByFields(self::class, [
-            'username' => $username
+        $statement = self::getConnection()->prepare("
+            SELECT *
+            FROM posts;
+        ");
+        $statement->execute();
+        return self::wrapRecords($statement);
+    }
+
+    public static function getById(int $id): ?Post
+    {
+        $statement = self::getConnection()->prepare("
+            SELECT *
+            FROM posts
+            WHERE id = :id;
+        ");
+        $statement->execute([':id' => $id]);
+        return self::wrapRecords($statement)[0] ?? null;
+    }
+
+    public function save(): void
+    {
+        $statement = self::getConnection()->prepare("
+            INSERT INTO posts (id, username, date, message)
+            VALUES (:id, :username, :date, :message)
+            ON DUPLICATE KEY UPDATE id = :id, username = :username, date = :date, message = :message;
+        ");
+        $statement->execute([
+            ':id' => $this->id,
+            ':username' => $this->username,
+            ':date' => $this->date,
+            ':message' => $this->message
         ]);
+        if (!isset($this->id)) {
+            $this->id = self::getConnection()->lastInsertId();
+        }
+    }
+
+    public function remove(): void
+    {
+        $statement = self::getConnection()->prepare("
+            DELETE FROM posts
+            WHERE id = :id;
+        ");
+        $statement->execute([':id' => $this->id]);
     }
 
     /**
-     * @return int
+     * @param array $fields
+     * @return Post[]
      */
-    public function getId(): int
+    public static function getByFields(array $fields): array
     {
-        return $this->id;
-    }
-
-    /**
-     * @return string
-     */
-    public function getUsername(): string
-    {
-        return $this->username;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDate(): string
-    {
-        return $this->date;
-    }
-
-    /**
-     * @return string
-     */
-    public function getMessage(): string
-    {
-        return $this->message;
+        $array = join(' AND ', array_map(function ($column) {
+            return "$column = :$column";
+        }, array_keys($fields)));
+        $statement = self::getConnection()->prepare("
+            SELECT *
+            FROM posts
+            WHERE $array
+        ");
+        $statement->execute(
+            array_combine(array_map(function ($column) {
+                return ":$column";
+            }, array_keys($fields)), $fields)
+        );
+        return self::wrapRecords($statement);
     }
 }
