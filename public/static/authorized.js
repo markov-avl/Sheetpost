@@ -12,8 +12,13 @@ function capitalize(string) {
 }
 
 
+function insertAfter(newNode, existingNode) {
+    existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
+}
+
+
 function setSheetCount(sheet) {
-    const postId = sheet.id.replace('post', '')
+    const postId = sheet.id.replace('postSheet', '')
     fetch('/sheetpost/api/get-post-sheet-count?' + new URLSearchParams({
         post_id: postId
     }).toString())
@@ -28,15 +33,11 @@ function setSheetCount(sheet) {
 
 function clickOnSheet(sheet) {
     const img = sheet.getElementsByTagName('img')[0]
-    const postId = sheet.id.replace('post', '')
-    const username = getCookie('username')
-    const password = getCookie('password')
+    const postId = sheet.id.replace('postSheet', '')
     const apiRequest = img.classList.contains('sheeted') ? 'unsheet-post' : 'sheet-post'
     const classReplace = img.classList.contains('sheeted') ? ['sheeted', 'unsheeted'] : ['unsheeted', 'sheeted']
     fetch(`/sheetpost/api/${apiRequest}?` + new URLSearchParams({
-        username: username,
-        password: password,
-        post_id: postId
+        username: getCookie('username'), password: getCookie('password'), post_id: postId
     }).toString())
         .then(response => response.json())
         .then(data => {
@@ -48,23 +49,66 @@ function clickOnSheet(sheet) {
 }
 
 
-function clickOnEdit(sheet) {
-    const img = sheet.getElementsByTagName('img')[0]
-    const postId = sheet.id.replace('post', '')
-    const username = getCookie('username')
-    const password = getCookie('password')
-    const apiRequest = img.classList.contains('sheeted') ? 'unsheet-post' : 'sheet-post'
-    const classReplace = img.classList.contains('sheeted') ? ['sheeted', 'unsheeted'] : ['unsheeted', 'sheeted']
-    fetch(`/sheetpost/api/${apiRequest}?` + new URLSearchParams({
-        username: username,
-        password: password,
-        post_id: postId
+function updatePost(postId) {
+    const messageText = document.getElementById('editPostMessageText').value.trim()
+    const messageTextValidationLabel = document.getElementById('editPostMessageTextValidationLabel')
+    const formValidationLabel = document.getElementById('editPostFormValidationLabel')
+
+    if (!messageText) {
+        messageTextValidationLabel.innerText = 'Message is empty'
+    } else if (messageText.length > 4096) {
+        messageTextValidationLabel.innerText = `Maximum message length is 4096 characters (${messageText.length - 4096} characters exceeded)`
+    } else {
+        messageTextValidationLabel.innerText = ''
+    }
+    formValidationLabel.hidden = true
+
+    if (messageText && messageText.length <= 4096) {
+        fetch('/sheetpost/api/edit-post?' + new URLSearchParams({
+            username: getCookie('username'), password: getCookie('password'), post_id: postId, message: messageText
+        }).toString())
+            .then(response => response.json())
+            .then(data => {
+                if ('success' in data && data['success']) {
+                    const post = document.getElementById(`post${postId}`);
+                    [...post.getElementsByClassName('line')].forEach(line => {
+                        line.remove()
+                    });
+                    let lastPostElement = [...post.getElementsByClassName('username')][0]
+                    messageText.split('\n').forEach(line => {
+                        let p = document.createElement('p')
+                        p.classList.add('card-text')
+                        p.classList.add('line')
+                        p.classList.add('mb-0')
+                        p.innerText = line
+                        insertAfter(p, lastPostElement)
+                        lastPostElement = p
+                    })
+                    return
+                } else if ('error' in data && data['error'] === 'invalid username or password') {
+                    formValidationLabel.innerText = 'Reauthorize and try again'
+                } else if ('error' in data) {
+                    formValidationLabel.innerText = capitalize(data['error'])
+                } else {
+                    formValidationLabel.innerText = 'Something went wrong, try again later'
+                }
+                formValidationLabel.hidden = false
+            })
+    }
+}
+
+
+function deletePost(postId) {
+    fetch(`/sheetpost/api/delete-post?` + new URLSearchParams({
+        username: getCookie('username'), password: getCookie('password'), post_id: postId
     }).toString())
         .then(response => response.json())
         .then(data => {
             if ('success' in data && data['success']) {
-                setSheetCount(sheet)
-                img.classList.replace(...classReplace)
+                document.getElementById(`post${postId}`).remove()
+                if (document.querySelector('.posts').children.length === 0) {
+                    document.location.reload()
+                }
             }
         })
 }
@@ -72,21 +116,38 @@ function clickOnEdit(sheet) {
 
 function setSheetListeners() {
     [...document.getElementsByClassName('sheet')].forEach(sheet => {
-        sheet.addEventListener('click', () => { clickOnSheet(sheet) })
+        sheet.addEventListener('click', () => {
+            clickOnSheet(sheet)
+        })
     })
 }
 
 
 function setEditListeners() {
-    [...document.getElementsByClassName('edit')].forEach(edit => {
-        edit.addEventListener('click', () => { clickOnEdit(edit) })
+    const editPostModal = document.getElementById('editPostModal');
+    editPostModal.addEventListener('show.bs.modal', event => {
+        const postId = event.relatedTarget.getAttribute('data-bs-whatever').replace('post', '')
+        editPostModal.querySelector('#editPostMessageText').value =
+            [...document.getElementById(`post${postId}`).getElementsByClassName('card-text mb-0')]
+                .map(line => {
+                    return line.innerText
+                }).join('\n')
+        document.getElementById('editPostUpdate').addEventListener('click', () => {
+            updatePost(postId)
+            document.getElementById('editPostCancel').click()
+        })
     })
 }
 
 
 function setDeleteListeners() {
-    [...document.getElementsByClassName('delete')].forEach(del => {
-        del.addEventListener('click', () => { clickOnDelete(del) })
+    const deletePostModal = document.getElementById('deletePostModal');
+    deletePostModal.addEventListener('show.bs.modal', event => {
+        const postId = event.relatedTarget.getAttribute('data-bs-whatever').replace('post', '')
+        document.getElementById('deletePostAccept').addEventListener('click', () => {
+            deletePost(postId)
+            document.getElementById('deletePostCancel').click()
+        })
     })
 }
 
@@ -98,8 +159,6 @@ document.getElementById('newPostModal').addEventListener('show.bs.modal', () => 
 
 
 document.getElementById('newPostCreate').addEventListener('click', () => {
-    const username = getCookie('username')
-    const password = getCookie('password')
     const messageText = document.getElementById('newPostMessageText').value.trim()
     const messageTextValidationLabel = document.getElementById('newPostMessageTextValidationLabel')
     const formValidationLabel = document.getElementById('newPostFormValidationLabel')
@@ -107,8 +166,7 @@ document.getElementById('newPostCreate').addEventListener('click', () => {
     if (!messageText) {
         messageTextValidationLabel.innerText = 'Message is empty'
     } else if (messageText.length > 4096) {
-        messageTextValidationLabel.innerText =
-            `Maximum message length is 4096 characters (${messageText.length - 4096} characters exceeded)`
+        messageTextValidationLabel.innerText = `Maximum message length is 4096 characters (${messageText.length - 4096} characters exceeded)`
     } else {
         messageTextValidationLabel.innerText = ''
     }
@@ -116,14 +174,12 @@ document.getElementById('newPostCreate').addEventListener('click', () => {
 
     if (messageText && messageText.length <= 4096) {
         fetch('/sheetpost/api/create-new-post?' + new URLSearchParams({
-            username: username,
-            password: password,
-            message: messageText
+            username: getCookie('username'), password: getCookie('password'), message: messageText
         }).toString())
             .then(response => response.json())
             .then(data => {
                 if ('success' in data && data['success']) {
-                    document.location.reload();
+                    document.location.reload()
                     return
                 } else if ('error' in data && data['error'] === 'invalid username or password') {
                     formValidationLabel.innerText = 'Reauthorize and try again'
