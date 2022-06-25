@@ -6,7 +6,8 @@ define('TEMPLATES_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'templates');
 
 
 use Dotenv\Dotenv;
-use Sheetpost\Database\Database;
+use Sheetpost\Database\PostExtended;
+use Sheetpost\Database\User;
 use Sheetpost\Models\LoggerWrapper;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -19,8 +20,6 @@ Dotenv::createImmutable(dirname(__DIR__))->load();
 $loader = new FilesystemLoader(TEMPLATES_PATH);
 $twig = new Environment($loader, ['cache' => $_ENV['TWIG_CACHING'] ? TWIG_CACHE_PATH : false]);
 $logger = new LoggerWrapper("Logger");
-$db = new Database($_ENV['DB_HOST'], $_ENV['DB_NAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
-$db->connect();
 
 
 $requestedPath = explode('?', $_SERVER['REQUEST_URI'])[0];
@@ -29,7 +28,8 @@ $requestedPath = str_ends_with($requestedPath, '/') ? rtrim($requestedPath, '/')
 
 // Если была отправлена форма на вход и правильно введены пользователь и пароль
 if (str_ends_with($requestedPath, 'login')) {
-    if (isset($_POST['username'], $_POST['password']) && $db->isUserExists($_POST['username'], $_POST['password'])) {
+    if (isset($_POST['username'], $_POST['password']) &&
+        User::getByFields(['username' => $_POST['username'], 'password' => $_POST['password']]) !== null) {
         setcookie('username', $_POST['username'], path: '/sheetpost-v2');
         setcookie('password', $_POST['password'], path: '/sheetpost-v2');
         header('Location: /sheetpost-v2/home');
@@ -48,7 +48,7 @@ if (str_ends_with($requestedPath, 'logout')) {
 }
 
 $authorized = isset($_COOKIE['username'], $_COOKIE['password']) &&
-    $db->isUserExists($_COOKIE['username'], $_COOKIE['password']);
+    User::getByFields(['username' => $_COOKIE['username'], 'password' => $_COOKIE['password']]) !== null;
 
 
 // Перенаправление на главную страницу, если пользователь не авторизован (если были подменены значения кук)
@@ -70,9 +70,12 @@ try {
     $template = end($paths);
     echo $twig->render("$template.html.twig", [
         "user" => $_COOKIE['username'] ?? null,
+//        "posts" => isset($_COOKIE['username']) && $template === 'myposts'
+//            ? $db->getUserPosts($_COOKIE['username'])
+//            : $db->getAllPosts($_COOKIE['username'] ?? null)
         "posts" => isset($_COOKIE['username']) && $template === 'myposts'
-            ? $db->getUserPosts($_COOKIE['username'])
-            : $db->getAllPosts($_COOKIE['username'] ?? null)
+            ? PostExtended::getByUsername($_COOKIE['username'])
+            : (isset($_COOKIE['username']) ? PostExtended::allAuthorized($_COOKIE['username']) : PostExtended::all())
     ]);
 } catch (LoaderError | RuntimeError | SyntaxError $e) {
     $logger->critical($e);
