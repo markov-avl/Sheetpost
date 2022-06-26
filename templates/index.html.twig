@@ -6,9 +6,9 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
     <!--suppress HtmlUnknownTarget -->
-    <link rel="icon" href="/sheetpost-v3/static/logo.png">
+    <link rel="icon" href="/sheetpost-v4/static/logo.png">
     <!--suppress HtmlUnknownTarget -->
-    <link rel="stylesheet" href="/sheetpost-v3/static/styles.css">
+    <link rel="stylesheet" href="/sheetpost-v4/static/styles.css">
     {% include 'bootstrap.html.twig' %}
 </head>
 <body>
@@ -18,7 +18,7 @@
             <div class="container-fluid" id="navbarContainer">
                 <a class="navbar-brand" {% block logohref %}{% endblock %}>
                     <!--suppress HtmlUnknownTarget -->
-                    <img src="/sheetpost-v3/static/logo.png" alt="" width="24" height="24"
+                    <img src="/sheetpost-v4/static/logo.png" alt="" width="24" height="24"
                          class="d-inline-block align-text-top">
                     SheetPost
                 </a>
@@ -51,11 +51,11 @@
                         {% if user is not null and user == post.username %}
                             <span class="align-items-center">
                                 <!--suppress HtmlUnknownTarget -->
-                                <img src="/sheetpost-v3/static/edit.svg" class="post-control edit d-inline-block"
+                                <img src="/sheetpost-v4/static/edit.svg" class="post-control edit d-inline-block"
                                      data-bs-toggle="modal" role="button" data-bs-whatever="post{{ post.id }}"
                                      data-bs-target="#editPostModal" alt="" width="20" height="20">
                                 <!--suppress HtmlUnknownTarget -->
-                                <img src="/sheetpost-v3/static/delete.svg" class="post-control edit d-inline-block"
+                                <img src="/sheetpost-v4/static/delete.svg" class="post-control edit d-inline-block"
                                      data-bs-toggle="modal" role="button" data-bs-whatever="post{{ post.id }}"
                                      data-bs-target="#deletePostModal" alt="" width="24" height="24">
                             </span>
@@ -75,7 +75,7 @@
                                 {% endif %}
                             </span>
                             <!--suppress HtmlUnknownTarget -->
-                            <img src="/sheetpost-v3/static/logo.png" alt="" width="24" height="24"
+                            <img src="/sheetpost-v4/static/logo.png" alt="" width="24" height="24"
                                  class="{% if user is null %}sheet{% elseif post.sheeted %}sheeted{% else %}unsheeted{% endif %} d-inline-block align-text-top">
                         </span>
                     </p>

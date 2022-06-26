@@ -3,7 +3,7 @@
 require_once join(DIRECTORY_SEPARATOR, [dirname(__DIR__), 'vendor', 'autoload.php']);
 
 use Dotenv\Dotenv;
-use Sheetpost\Models\LoggerWrapper;
+use Sheetpost\Model\LoggerWrapper;
 
 
 header("Access-Control-Allow-Origin: *");
@@ -15,7 +15,7 @@ Dotenv::createImmutable(dirname(__DIR__))->load();
 
 $logger = new LoggerWrapper("Logger");
 
-$requestedPath = rtrim(explode('?', str_replace('-v3', '', $_SERVER['REQUEST_URI']))[0], '/');
+$requestedPath = rtrim(explode('?', str_replace('-v4', '', $_SERVER['REQUEST_URI']))[0], '/');
 $responseClass = str_replace(['/ ', '- ', 'Api'], ['\\', '', 'API'], ucwords(str_replace(['/', '-'], ['/ ', '- '], $requestedPath)));
 
 if (class_exists($responseClass)) {

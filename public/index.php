@@ -6,9 +6,9 @@ define('TEMPLATES_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'templates');
 
 
 use Dotenv\Dotenv;
-use Sheetpost\Database\Repositories\ExtendedPostRepository;
-use Sheetpost\Database\Repositories\UserRepository;
-use Sheetpost\Models\LoggerWrapper;
+use Sheetpost\Model\Database\Repositories\ExtendedPostRepository;
+use Sheetpost\Model\Database\Repositories\UserRepository;
+use Sheetpost\Model\LoggerWrapper;
 use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -30,20 +30,20 @@ $requestedPath = str_ends_with($requestedPath, '/') ? rtrim($requestedPath, '/')
 if (str_ends_with($requestedPath, 'login')) {
     if (isset($_POST['username'], $_POST['password']) &&
         UserRepository::getByFields(['username' => $_POST['username'], 'password' => $_POST['password']]) !== null) {
-        setcookie('username', $_POST['username'], path: '/sheetpost-v3');
-        setcookie('password', $_POST['password'], path: '/sheetpost-v3');
-        header('Location: /sheetpost-v3/home');
+        setcookie('username', $_POST['username'], path: '/sheetpost-v4');
+        setcookie('password', $_POST['password'], path: '/sheetpost-v4');
+        header('Location: /sheetpost-v4/home');
     } else {
-        header('Location: /sheetpost-v3');
+        header('Location: /sheetpost-v4');
     }
     die();
 }
 
 // Если была отправлена форма на выход
 if (str_ends_with($requestedPath, 'logout')) {
-    setcookie('username', expires_or_options: -1, path: '/sheetpost-v3');
-    setcookie('password', expires_or_options: -1, path: '/sheetpost-v3');
-    header('Location: /sheetpost-v3');
+    setcookie('username', expires_or_options: -1, path: '/sheetpost-v4');
+    setcookie('password', expires_or_options: -1, path: '/sheetpost-v4');
+    header('Location: /sheetpost-v4');
     die();
 }
 
@@ -52,16 +52,16 @@ $authorized = isset($_COOKIE['username'], $_COOKIE['password']) &&
 
 
 // Перенаправление на главную страницу, если пользователь не авторизован (если были подменены значения кук)
-if (!str_ends_with($requestedPath, 'sheetpost-v3') && !$authorized) {
-    setcookie('username', expires_or_options: -1, path: '/sheetpost-v3');
-    setcookie('password', expires_or_options: -1, path: '/sheetpost-v3');
-    header('Location: /sheetpost-v3');
+if (!str_ends_with($requestedPath, 'sheetpost-v4') && !$authorized) {
+    setcookie('username', expires_or_options: -1, path: '/sheetpost-v4');
+    setcookie('password', expires_or_options: -1, path: '/sheetpost-v4');
+    header('Location: /sheetpost-v4');
     die();
 }
 
 // Перенаправление на главную страницу авторизованного пользователя, если он не находится сейчас на ней
-if (str_ends_with($requestedPath, 'sheetpost-v3') && $authorized) {
-    header('Location: /sheetpost-v3/home');
+if (str_ends_with($requestedPath, 'sheetpost-v4') && $authorized) {
+    header('Location: /sheetpost-v4/home');
     die();
 }
 
