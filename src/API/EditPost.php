@@ -3,8 +3,10 @@
 namespace Sheetpost\API;
 
 use Exception;
-use Sheetpost\Database\Post;
-use Sheetpost\Database\User;
+use Sheetpost\Database\Records\Post;
+use Sheetpost\Database\Records\User;
+use Sheetpost\Database\Repositories\PostRepository;
+use Sheetpost\Database\Repositories\UserRepository;
 use Sheetpost\Models\APIResponse;
 use Sheetpost\Models\StringParameter;
 
@@ -27,8 +29,8 @@ class EditPost extends APIResponse
             return ['success' => false, 'error' => $messageError];
         }
 
-        if (User::getByFields(['username' => $getParameters['username'], 'password' => $getParameters['password']])) {
-            $post = Post::getById($getParameters['post_id']);
+        if (UserRepository::getByFields(['username' => $getParameters['username'], 'password' => $getParameters['password']])) {
+            $post = PostRepository::getById($getParameters['post_id']);
             if ($post === null) {
                 return ['success' => false, 'error' => 'post not found'];
             }
@@ -36,7 +38,7 @@ class EditPost extends APIResponse
                 return ['success' => false, 'error' => 'it is not a post created by this user'];
             }
             $post->message = $getParameters['message'];
-            $post->save();
+            PostRepository::save($post);
             return ['success' => true];
         }
         return ['success' => false, 'error' => 'invalid username or password'];

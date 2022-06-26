@@ -3,7 +3,8 @@
 namespace Sheetpost\API;
 
 use Exception;
-use Sheetpost\Database\PostExtended;
+use Sheetpost\Database\Records\ExtendedPost;
+use Sheetpost\Database\Repositories\ExtendedPostRepository;
 use Sheetpost\Models\APIResponse;
 use Sheetpost\Models\IntegerParameter;
 
@@ -27,7 +28,7 @@ class GetPostSheetCount extends APIResponse
 
         return [
             'success' => true,
-            'sheet_count' => PostExtended::getByFields(['id' => $getParameters['post_id']])[0]->sheetCount ?? -1
+            'sheet_count' => ExtendedPostRepository::getByFields(['id' => $getParameters['post_id']])[0]->sheetCount ?? -1
         ];
     }
 }

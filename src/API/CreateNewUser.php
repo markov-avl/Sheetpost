@@ -3,8 +3,10 @@
 namespace Sheetpost\API;
 
 use Exception;
-use Sheetpost\Database\User;
+use Sheetpost\Database\Records\User;
+use Sheetpost\Database\Repositories\UserRepository;
 use Sheetpost\Models\APIResponse;
+use Sheetpost\Models\LoggerWrapper;
 use Sheetpost\Models\StringParameter;
 
 
@@ -30,11 +32,13 @@ class CreateNewUser extends APIResponse
             }
         }
 
-        if (User::getById($getParameters['username'])) {
+        $logger = new LoggerWrapper('logger');
+        $logger->debug('Тут');
+        if (UserRepository::getByUsername($getParameters['username']) !== null) {
             return ['success' => false, 'error' => 'this username is already taken'];
         }
         $newUser = new User($getParameters['username'], $getParameters['password']);
-        $newUser->save();
+        UserRepository::save($newUser);
         return ['success' => true];
     }
 }

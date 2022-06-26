@@ -3,7 +3,8 @@
 namespace Sheetpost\API;
 
 use Exception;
-use Sheetpost\Database\User;
+use Sheetpost\Database\Records\User;
+use Sheetpost\Database\Repositories\UserRepository;
 use Sheetpost\Models\APIResponse;
 
 class IsUserExists extends APIResponse
@@ -20,7 +21,7 @@ class IsUserExists extends APIResponse
     {
         return [
             "success" => true,
-            "exists" => isset(User::getByFields([
+            "exists" => isset(UserRepository::getByFields([
                     'username' => $getParameters['username'],
                     'password' => $getParameters['password']
                 ])[0])
