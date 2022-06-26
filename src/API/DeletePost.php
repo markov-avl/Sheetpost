@@ -3,8 +3,10 @@
 namespace Sheetpost\API;
 
 use Exception;
-use Sheetpost\Database\Post;
-use Sheetpost\Database\User;
+use Sheetpost\Database\Records\Post;
+use Sheetpost\Database\Records\User;
+use Sheetpost\Database\Repositories\PostRepository;
+use Sheetpost\Database\Repositories\UserRepository;
 use Sheetpost\Models\APIResponse;
 
 class DeletePost extends APIResponse
@@ -19,15 +21,15 @@ class DeletePost extends APIResponse
      */
     protected function getQueryResponse(array $getParameters): array
     {
-        if (User::getByFields(['username' => $getParameters['username'], 'password' => $getParameters['password']])) {
-            $post = Post::getById($getParameters['post_id']);
+        if (UserRepository::getByFields(['username' => $getParameters['username'], 'password' => $getParameters['password']])) {
+            $post = PostRepository::getById($getParameters['post_id']);
             if ($post === null) {
                 return ['success' => false, 'error' => 'post not found'];
             }
             if ($post->username !== $getParameters['username']) {
                 return ['success' => false, 'error' => 'it is not a post created by this user'];
             }
-            $post->remove();
+            PostRepository::remove($post);
             return ['success' => true];
         }
         return ['success' => false, 'error' => 'invalid username or password'];

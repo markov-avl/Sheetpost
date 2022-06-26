@@ -3,8 +3,9 @@
 namespace Sheetpost\API;
 
 use Exception;
-use Sheetpost\Database\Sheet;
-use Sheetpost\Database\User;
+use Sheetpost\Database\Repositories\SheetRepository;
+use Sheetpost\Database\Repositories\UserRepository;
+use Sheetpost\Database\Records\Sheet;
 use Sheetpost\Models\APIResponse;
 use Sheetpost\Models\IntegerParameter;
 
@@ -26,9 +27,9 @@ class UnsheetPost extends APIResponse
             return ['success' => false, 'error' => $postIdError];
         }
 
-        if (User::getByFields(['username' => $getParameters['username'], 'password' => $getParameters['password']])) {
+        if (UserRepository::getByFields(['username' => $getParameters['username'], 'password' => $getParameters['password']])) {
             $sheet = new Sheet($getParameters['username'], $getParameters['post_id']);
-            $sheet->remove();
+            SheetRepository::remove($sheet);
             return ['success' => true];
         }
         return ['success' => false, 'error' => 'invalid username or password'];

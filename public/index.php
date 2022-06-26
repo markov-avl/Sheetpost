@@ -6,8 +6,8 @@ define('TEMPLATES_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'templates');
 
 
 use Dotenv\Dotenv;
-use Sheetpost\Database\PostExtended;
-use Sheetpost\Database\User;
+use Sheetpost\Database\Repositories\ExtendedPostRepository;
+use Sheetpost\Database\Repositories\UserRepository;
 use Sheetpost\Models\LoggerWrapper;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -29,7 +29,7 @@ $requestedPath = str_ends_with($requestedPath, '/') ? rtrim($requestedPath, '/')
 // Если была отправлена форма на вход и правильно введены пользователь и пароль
 if (str_ends_with($requestedPath, 'login')) {
     if (isset($_POST['username'], $_POST['password']) &&
-        User::getByFields(['username' => $_POST['username'], 'password' => $_POST['password']]) !== null) {
+        UserRepository::getByFields(['username' => $_POST['username'], 'password' => $_POST['password']]) !== null) {
         setcookie('username', $_POST['username'], path: '/sheetpost-v3');
         setcookie('password', $_POST['password'], path: '/sheetpost-v3');
         header('Location: /sheetpost-v3/home');
@@ -48,7 +48,7 @@ if (str_ends_with($requestedPath, 'logout')) {
 }
 
 $authorized = isset($_COOKIE['username'], $_COOKIE['password']) &&
-    User::getByFields(['username' => $_COOKIE['username'], 'password' => $_COOKIE['password']]) !== null;
+    UserRepository::getByFields(['username' => $_COOKIE['username'], 'password' => $_COOKIE['password']]) !== null;
 
 
 // Перенаправление на главную страницу, если пользователь не авторизован (если были подменены значения кук)
@@ -70,14 +70,14 @@ try {
     $template = end($paths);
     if (isset($_COOKIE['username'])) {
         if ($template === 'myposts') {
-            $posts = PostExtended::getByUsername($_COOKIE['username']);
+            $posts = ExtendedPostRepository::allUserPosts($_COOKIE['username']);
         } elseif ($template === 'mysheets') {
-            $posts = PostExtended::getByUserSheets($_COOKIE['username']);
+            $posts = ExtendedPostRepository::allUserSheets($_COOKIE['username']);
         } else {
-            $posts = PostExtended::allAuthorized($_COOKIE['username']);
+            $posts = ExtendedPostRepository::allAuthorized($_COOKIE['username']);
         }
     } else {
-        $posts = PostExtended::all();
+        $posts = ExtendedPostRepository::all();
     }
     echo $twig->render("$template.html.twig", [
         "user" => $_COOKIE['username'] ?? null,
