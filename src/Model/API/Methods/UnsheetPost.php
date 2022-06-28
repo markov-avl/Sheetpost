@@ -8,7 +8,7 @@ use Sheetpost\Model\Database\Records\Sheet;
 use Sheetpost\Model\Database\Repositories\SheetRepository;
 use Sheetpost\Model\Database\Repositories\UserRepository;
 
-class UnsheetPost extends APIMethod
+class UnsheetPost extends APIMethodAbstract
 {
     public function __construct()
     {

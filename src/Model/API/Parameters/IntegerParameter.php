@@ -2,7 +2,7 @@
 
 namespace Sheetpost\Model\API\Parameters;
 
-class IntegerParameter
+class IntegerParameter implements ParameterInterface
 {
     public string $data;
     public string $name;
@@ -17,7 +17,7 @@ class IntegerParameter
         $this->maxValue = $maxValue;
     }
 
-    public function check(): string
+    public function check(): ?string
     {
         if (!ctype_digit($this->data)) {
             return "$this->name is not an integer";
@@ -28,6 +28,6 @@ class IntegerParameter
         if ($this->data > $this->maxValue) {
             return "$this->name must be less than or equal to $this->maxValue";
         }
-        return "";
+        return null;
     }
 }

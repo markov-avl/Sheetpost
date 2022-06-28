@@ -9,7 +9,7 @@ use Sheetpost\Model\Database\Repositories\UserRepository;
 use Sheetpost\Model\LoggerWrapper;
 
 
-class CreateNewUser extends APIMethod
+class CreateNewUser extends APIMethodAbstract
 {
     public function __construct()
     {

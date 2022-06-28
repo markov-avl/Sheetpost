@@ -9,7 +9,7 @@ use Sheetpost\Model\Database\Records\Post;
 use Sheetpost\Model\Database\Repositories\PostRepository;
 use Sheetpost\Model\Database\Repositories\UserRepository;
 
-class CreateNewPost extends APIMethod
+class CreateNewPost extends APIMethodAbstract
 {
     public function __construct()
     {

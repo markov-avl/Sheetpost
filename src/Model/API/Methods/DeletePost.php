@@ -6,7 +6,7 @@ use Exception;
 use Sheetpost\Model\Database\Repositories\PostRepository;
 use Sheetpost\Model\Database\Repositories\UserRepository;
 
-class DeletePost extends APIMethod
+class DeletePost extends APIMethodAbstract
 {
     public function __construct()
     {

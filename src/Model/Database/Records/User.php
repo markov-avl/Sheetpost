@@ -2,7 +2,7 @@
 
 namespace Sheetpost\Model\Database\Records;
 
-class User extends Record
+class User implements RecordInterface
 {
     public string $username;
     public string $password;

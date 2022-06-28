@@ -5,7 +5,7 @@ namespace Sheetpost\Model\API\Methods;
 use Exception;
 use Sheetpost\Model\Database\Repositories\UserRepository;
 
-class IsUserExists extends APIMethod
+class IsUserExists extends APIMethodAbstract
 {
     public function __construct()
     {

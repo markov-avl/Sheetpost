@@ -2,7 +2,7 @@
 
 namespace Sheetpost\View;
 
-class APIResponseView
+class APIResponseView implements ViewInterface
 {
     private array $response;
 

@@ -2,7 +2,7 @@
 
 namespace Sheetpost\Model\API\Parameters;
 
-class StringParameter
+class StringParameter implements ParameterInterface
 {
     public string $data;
     public string $name;
@@ -17,7 +17,7 @@ class StringParameter
         $this->noSpaces = $noSpaces;
     }
 
-    public function check(): string
+    public function check(): ?string
     {
         if (!$this->data) {
             return "$this->name is empty";
@@ -28,6 +28,6 @@ class StringParameter
         if ($this->noSpaces && str_contains($this->data, ' ')) {
             return "$this->name must not contain spaces";
         }
-        return "";
+        return null;
     }
 }

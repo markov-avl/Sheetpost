@@ -2,7 +2,7 @@
 
 namespace Sheetpost\Model\API\Methods;
 
-abstract class APIMethod
+abstract class APIMethodAbstract
 {
     protected array $parameters;
 

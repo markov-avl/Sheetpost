@@ -7,7 +7,7 @@ use Sheetpost\Model\API\Parameters\StringParameter;
 use Sheetpost\Model\Database\Repositories\PostRepository;
 use Sheetpost\Model\Database\Repositories\UserRepository;
 
-class EditPost extends APIMethod
+class EditPost extends APIMethodAbstract
 {
     public function __construct()
     {

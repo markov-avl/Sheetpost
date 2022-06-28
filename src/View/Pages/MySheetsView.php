@@ -2,10 +2,12 @@
 
 namespace Sheetpost\View\Pages;
 
-class MySheetsView extends PageView
+use Twig\Environment;
+
+class MySheetsView extends PageViewAbstract
 {
-    public function __construct(string $username, array $posts)
+    public function __construct(Environment $twig, string $user, array $posts)
     {
-        parent::__construct($username, $posts, 'mysheets.html.twig');
+        parent::__construct($twig, $user, $posts, 'mysheets.html.twig');
     }
 }

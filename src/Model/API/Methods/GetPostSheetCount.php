@@ -6,7 +6,7 @@ use Exception;
 use Sheetpost\Model\API\Parameters\IntegerParameter;
 use Sheetpost\Model\Database\Repositories\ExtendedPostRepository;
 
-class GetPostSheetCount extends APIMethod
+class GetPostSheetCount extends APIMethodAbstract
 {
     public function __construct()
     {

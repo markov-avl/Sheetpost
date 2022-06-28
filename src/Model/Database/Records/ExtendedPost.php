@@ -2,7 +2,7 @@
 
 namespace Sheetpost\Model\Database\Records;
 
-class ExtendedPost extends Record
+class ExtendedPost implements RecordInterface
 {
     public int $id;
     public string $username;
