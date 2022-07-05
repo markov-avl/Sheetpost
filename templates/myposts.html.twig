@@ -5,15 +5,14 @@
 {% block noposts %}It looks like you don't have any posts :({% endblock %}
 
 {% block script %}
-    <!--suppress HtmlUnknownTarget -->
-    <script src="/sheetpost-v4/static/authorized.js"></script>
+    <script src="/{{ rootpath }}/static/authorized.js"></script>
 {% endblock %}
 
-{% block logohref %}href="/sheetpost-v4/home"{% endblock %}
+{% block logohref %}href="/{{ rootpath }}/home"{% endblock %}
 
 {% block myposts %}
-    <a class="nav-link active" href="/sheetpost-v4/myposts">My posts</a>
-    <a class="nav-link" href="/sheetpost-v4/mysheets">My sheets</a>
+    <a class="nav-link active" href="/{{ rootpath }}/myposts">My posts</a>
+    <a class="nav-link" href="/{{ rootpath }}/mysheets">My sheets</a>
 {% endblock %}
 
 {% block buttons %}

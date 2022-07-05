@@ -2,6 +2,9 @@
 
 namespace Sheetpost;
 
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
 use Dotenv\Dotenv;
 use Monolog\ErrorHandler;
 use Monolog\Formatter\FormatterInterface;
@@ -10,8 +13,14 @@ use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
-use Sheetpost\Model\Database\Adapters\DatabaseAdapterInterface;
-use Sheetpost\Model\Database\Adapters\MySQLAdapter;
+use Sheetpost\Controller\APIMethodController;
+use Sheetpost\Controller\ControllerInterface;
+use Sheetpost\Controller\PageController;
+use Sheetpost\Model\Database\Configurations\ConfigurationAbstract;
+use Sheetpost\Model\Database\Configurations\ProductionConfiguration;
+use Sheetpost\Model\Database\Connections\ConnectionAbstract;
+use Sheetpost\Model\Database\Connections\MySQLConnection;
+use Sheetpost\Model\Database\Entities\User;
 use Twig\Cache\CacheInterface;
 use Twig\Cache\FilesystemCache;
 use Twig\Environment;
@@ -20,18 +29,24 @@ use Twig\Loader\LoaderInterface;
 
 class Application
 {
-    private string $firstLevel = 'sheetpost-v4';
+    private string $rootPath = 'sheetpost';
     private FormatterInterface $logFormatter;
     private HandlerInterface $logHandler;
     private LoggerInterface $logger;
     private LoaderInterface $twigLoader;
     private CacheInterface $twigCache;
     private Environment $twig;
-    private DatabaseAdapterInterface $dbConnection;
+    private ConnectionAbstract $dbConnection;
+    private ConfigurationAbstract $ormConfiguration;
+    private EntityManagerInterface $entityManager;
+    private ?ControllerInterface $controller;
 
+    /**
+     * @throws ORMException
+     */
     public function __construct()
     {
-        Dotenv::createImmutable(dirname(__DIR__, 2))->load();
+        Dotenv::createImmutable(dirname(__DIR__))->load();
 
         $this->logFormatter = new LineFormatter($_ENV['LOGGER_OUTPUT_FORMAT'], $_ENV['LOGGER_DATE_FORMAT']);
         $this->logHandler = new StreamHandler($_ENV['LOGGER_PATH']);
@@ -43,9 +58,16 @@ class Application
         $this->twig = new Environment($this->twigLoader);
         $this->setTwig();
 
-        $this->dbConnection = new MySQLAdapter(
+        $this->dbConnection = new MySQLConnection(
             $_ENV['DB_HOST'], $_ENV['DB_PORT'], $_ENV['DB_NAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']
         );
+        $this->ormConfiguration = new ProductionConfiguration($_ENV['DOCTRINE_PROXY_PATH']);
+        $this->entityManager = EntityManager::create(
+            $this->dbConnection->toArray(),
+            $this->ormConfiguration->toAnnotationMetadataConfiguration()
+        );
+
+        $this->controller = null;
     }
 
     private function setLogger(): void
@@ -62,73 +84,81 @@ class Application
         }
     }
 
-    private function deleteCookies(...$cookies): void
+    private function getUser(string $username, string $password): ?User
     {
-        foreach ($cookies as $cookie) {
-            setcookie($cookie, expires_or_options: -1, path: "/$this->firstLevel");
+        return $this->entityManager->getRepository(User::class)->findByUsernameAndPassword($username, $password);
+    }
+
+    private function setCookies(array $cookies): void
+    {
+        foreach ($cookies as $cookieName => $cookieValue) {
+            setcookie($cookieName, $cookieValue, path: "/$this->rootPath");
         }
     }
 
-//    public function start(): void
-//    {
-//        $requestedPath = rtrim(explode('?', $_SERVER['REQUEST_URI'])[0], '/');
-//
-//        // Если была отправлена форма на вход и правильно введены пользователь и пароль
-//        if (str_ends_with($requestedPath, 'login')) {
-//            if () {
-//                setcookie('username', $_POST['username'], path: "/$this->firstLevel");
-//                setcookie('password', $_POST['password'], path: "/$this->firstLevel");
-//                header("Location: /$this->firstLevel/home");
-//            } else {
-//                header("Location: /$this->firstLevel");
-//            }
-//            die();
-//        }
-//
-//        // Если была отправлена форма на выход
-//        if (str_ends_with($requestedPath, 'logout')) {
-//            $this->deleteCookies('username', 'password');
-//            header("Location: /$this->firstLevel");
-//            die();
-//        }
-//
-//        $authorized = isset($_COOKIE['username'], $_COOKIE['password']) &&
-//            UserRepository::getByFields(['username' => $_COOKIE['username'], 'password' => $_COOKIE['password']]) !== null;
-//
-//
-//        // Перенаправление на главную страницу, если пользователь не авторизован (если были подменены значения кук)
-//        if (!str_ends_with($requestedPath, $this->firstLevel) && !$authorized) {
-//            $this->deleteCookies('username', 'password');
-//            header("Location: /$this->firstLevel");
-//            die();
-//        }
-//
-//        // Перенаправление на главную страницу авторизованного пользователя, если он не находится сейчас на ней
-//        if (str_ends_with($requestedPath, $this->firstLevel) && $authorized) {
-//            header("Location: /$this->firstLevel/home");
-//            die();
-//        }
-//
-//        try {
-//            $paths = explode('/', $requestedPath);
-//            $template = end($paths);
-//            if (isset($_COOKIE['username'])) {
-//                if ($template === 'myposts') {
-//                    $posts = ExtendedPostRepository::allUserPosts($_COOKIE['username']);
-//                } elseif ($template === 'mysheets') {
-//                    $posts = ExtendedPostRepository::allUserSheets($_COOKIE['username']);
-//                } else {
-//                    $posts = ExtendedPostRepository::allAuthorized($_COOKIE['username']);
-//                }
-//            } else {
-//                $posts = ExtendedPostRepository::all();
-//            }
-//            echo $twig->render("$template.html.twig", [
-//                "user" => $_COOKIE['username'] ?? null,
-//                "posts" => $posts
-//            ]);
-//        } catch (LoaderError|RuntimeError|SyntaxError $e) {
-//            $logger->critical($e);
-//        }
-//    }
+    private function deleteCookies(...$cookies): void
+    {
+        foreach ($cookies as $cookie) {
+            setcookie($cookie, expires_or_options: -1, path: "/$this->rootPath");
+        }
+    }
+
+    private function setLocation(string $location): void
+    {
+        header("Location: /$location");
+    }
+
+    public function run(): void
+    {
+        $requestedPath = trim(explode('?', $_SERVER['REQUEST_URI'])[0], '/');
+
+        // Если была отправлена форма на выход
+        if ($requestedPath === "$this->rootPath/logout") {
+            $this->deleteCookies('username', 'password');
+            $this->setLocation($this->rootPath);
+            die();
+        }
+
+        // Если была отправлена форма на вход и правильно введены пользователь и пароль
+        if ($requestedPath === "$this->rootPath/login") {
+            if (isset($_POST['username'], $_POST['password'])
+                && $this->getUser($_POST['username'], $_POST['password'])) {
+                $this->setCookies(['username' => $_POST['username'], 'password' => $_POST['password']]);
+                $this->setLocation("$this->rootPath/home");
+            } else {
+                $this->setLocation($this->rootPath);
+            }
+            die();
+        }
+
+        $user = isset($_COOKIE['username'], $_COOKIE['password']) ?
+            $this->getUser($_COOKIE['username'], $_COOKIE['password']) : null;
+
+        // Перенаправление на главную страницу, если пользователь значения кук были подменены
+        if (preg_match("/$this->rootPath\/(home|myposts|mysheets)/", $requestedPath) && $user === null) {
+            $this->deleteCookies('username', 'password');
+            $this->setLocation($this->rootPath);
+            die();
+        }
+
+        // Перенаправление на домашнюю страницу авторизованного пользователя, если он сейчас находится на главной
+        if ($requestedPath === $this->rootPath && $user !== null) {
+            $this->setLocation("$this->rootPath/home");
+            die();
+        }
+
+        // Случаи, когда пользователю нужно показать представления
+        if (preg_match("/$this->rootPath\/api\/.+/", $requestedPath)) {
+            $this->controller = new APIMethodController($this->entityManager, $requestedPath);
+        } else {
+            $this->controller = new PageController(
+                $this->twig,
+                $this->entityManager,
+                $requestedPath,
+                $this->rootPath,
+                $user
+            );
+        }
+        $this->controller->show();
+    }
 }

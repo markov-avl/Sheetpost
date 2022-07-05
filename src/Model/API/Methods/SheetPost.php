@@ -2,18 +2,18 @@
 
 namespace Sheetpost\Model\API\Methods;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Sheetpost\Model\API\Parameters\IntegerParameter;
-use Sheetpost\Model\Database\Records\Sheet;
-use Sheetpost\Model\Database\Repositories\PostRepository;
-use Sheetpost\Model\Database\Repositories\SheetRepository;
-use Sheetpost\Model\Database\Repositories\UserRepository;
+use Sheetpost\Model\Database\Entities\Post;
+use Sheetpost\Model\Database\Entities\Sheet;
+use Sheetpost\Model\Database\Entities\User;
 
 class SheetPost extends APIMethodAbstract
 {
-    public function __construct()
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        parent::__construct(['username', 'password', 'post_id']);
+        parent::__construct($entityManager, ['username', 'password', 'post_id']);
     }
 
     /**
@@ -27,14 +27,24 @@ class SheetPost extends APIMethodAbstract
             return ['success' => false, 'error' => $postIdError];
         }
 
-        if (PostRepository::getById($getParameters['post_id']) === null) {
-            return ['success' => false, 'error' => 'post id not found'];
+        $post = $this->entityManager->getRepository(Post::class)->findById($getParameters['post_id']);
+        if ($post === null) {
+            return ['success' => false, 'error' => 'post not found'];
         }
-        if (UserRepository::getByFields(['username' => $getParameters['username'], 'password' => $getParameters['password']])) {
-            $sheet = new Sheet($getParameters['username'], $getParameters['post_id']);
-            SheetRepository::save($sheet);
-            return ['success' => true];
+
+        $user = $this->entityManager->getRepository(User::class)->findByUsernameAndPassword(
+            $getParameters['username'],
+            $getParameters['password']
+        );
+        if ($user === null) {
+            return ['success' => false, 'error' => 'invalid username or password'];
         }
-        return ['success' => false, 'error' => 'invalid username or password'];
+
+        $newSheet = new Sheet();
+        $newSheet->setUser($user);
+        $newSheet->setPost($post);
+        $this->entityManager->persist($newSheet);
+        $this->entityManager->flush();
+        return ['success' => true];
     }
 }

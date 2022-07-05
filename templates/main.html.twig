@@ -5,11 +5,10 @@
 {% block noposts %}It looks like no one has any posts :({% endblock %}
 
 {% block script %}
-    <!--suppress HtmlUnknownTarget -->
-    <script src="/sheetpost-v4/static/unauthorized.js"></script>
+    <script src="/{{ rootpath }}/static/unauthorized.js"></script>
 {% endblock %}
 
-{% block logohref %}href="/sheetpost-v4"{% endblock %}
+{% block logohref %}href="/{{ rootpath }}"{% endblock %}
 
 {% block buttons %}
     {% include 'login.html.twig' %}

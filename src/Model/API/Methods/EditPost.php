@@ -2,16 +2,16 @@
 
 namespace Sheetpost\Model\API\Methods;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Sheetpost\Model\API\Parameters\StringParameter;
-use Sheetpost\Model\Database\Repositories\PostRepository;
-use Sheetpost\Model\Database\Repositories\UserRepository;
+use Sheetpost\Model\Database\Entities\Post;
 
 class EditPost extends APIMethodAbstract
 {
-    public function __construct()
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        parent::__construct(['username', 'password', 'post_id', 'message']);
+        parent::__construct($entityManager, ['username', 'password', 'post_id', 'message']);
     }
 
     /**
@@ -26,18 +26,17 @@ class EditPost extends APIMethodAbstract
             return ['success' => false, 'error' => $messageError];
         }
 
-        if (UserRepository::getByFields(['username' => $getParameters['username'], 'password' => $getParameters['password']])) {
-            $post = PostRepository::getById($getParameters['post_id']);
-            if ($post === null) {
-                return ['success' => false, 'error' => 'post not found'];
-            }
-            if ($post->username !== $getParameters['username']) {
-                return ['success' => false, 'error' => 'it is not a post created by this user'];
-            }
-            $post->message = $getParameters['message'];
-            PostRepository::save($post);
-            return ['success' => true];
+        $post = $this->entityManager->getRepository(Post::class)->findById($getParameters['post_id']);
+        if ($post === null) {
+            return ['success' => false, 'error' => 'post not found'];
         }
-        return ['success' => false, 'error' => 'invalid username or password'];
+        $user = $post->getUser();
+        if ($user->getUsername() !== $getParameters['username'] || $user->getPassword() !== $getParameters['password']) {
+            return ['success' => false, 'error' => 'this post was not created by this user'];
+        }
+        $post->setMessage($getParameters['message']);
+        $this->entityManager->refresh($post);
+        $this->entityManager->flush();
+        return ['success' => true];
     }
 }

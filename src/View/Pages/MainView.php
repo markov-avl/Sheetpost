@@ -6,8 +6,8 @@ use Twig\Environment;
 
 class MainView extends PageViewAbstract
 {
-    public function __construct(Environment $twig, array $posts)
+    public function __construct(Environment $twig, string $rootPath, array $posts)
     {
-        parent::__construct($twig, null, $posts, 'sheetpost-v4.html.twig');
+        parent::__construct($twig, $rootPath, null, $posts, 'main.html.twig');
     }
 }

@@ -6,8 +6,8 @@ use Twig\Environment;
 
 class HomeView extends PageViewAbstract
 {
-    public function __construct(Environment $twig, string $user, array $posts)
+    public function __construct(Environment $twig, string $rootPath, string $user, array $posts)
     {
-        parent::__construct($twig, $user, $posts, 'home.html.twig');
+        parent::__construct($twig, $rootPath, $user, $posts, 'home.html.twig');
     }
 }

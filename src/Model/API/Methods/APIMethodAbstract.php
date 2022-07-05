@@ -2,12 +2,16 @@
 
 namespace Sheetpost\Model\API\Methods;
 
+use Doctrine\ORM\EntityManagerInterface;
+
 abstract class APIMethodAbstract
 {
+    protected EntityManagerInterface $entityManager;
     protected array $parameters;
 
-    public function __construct(array $parameters)
+    public function __construct(EntityManagerInterface $entityManager, array $parameters)
     {
+        $this->entityManager = $entityManager;
         $this->parameters = $parameters;
     }
 

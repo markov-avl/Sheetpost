@@ -2,15 +2,16 @@
 
 namespace Sheetpost\Model\API\Methods;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Sheetpost\Model\API\Parameters\IntegerParameter;
-use Sheetpost\Model\Database\Repositories\ExtendedPostRepository;
+use Sheetpost\Model\Database\Entities\Sheet;
 
 class GetPostSheetCount extends APIMethodAbstract
 {
-    public function __construct()
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        parent::__construct(['post_id']);
+        parent::__construct($entityManager, ['post_id']);
     }
 
     /**
@@ -26,7 +27,7 @@ class GetPostSheetCount extends APIMethodAbstract
 
         return [
             'success' => true,
-            'sheet_count' => ExtendedPostRepository::getByFields(['id' => $getParameters['post_id']])[0]->sheetCount ?? -1
+            'sheet_count' => $this->entityManager->getRepository(Sheet::class)->getCountByPostId($getParameters['post_id'])
         ];
     }
 }

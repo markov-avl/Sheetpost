@@ -2,14 +2,15 @@
 
 namespace Sheetpost\Model\API\Methods;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Sheetpost\Model\Database\Repositories\UserRepository;
+use Sheetpost\Model\Database\Entities\User;
 
 class IsUserExists extends APIMethodAbstract
 {
-    public function __construct()
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        parent::__construct(['username', 'password']);
+        parent::__construct($entityManager, ['username', 'password']);
     }
 
     /**
@@ -19,10 +20,10 @@ class IsUserExists extends APIMethodAbstract
     {
         return [
             "success" => true,
-            "exists" => isset(UserRepository::getByFields([
-                    'username' => $getParameters['username'],
-                    'password' => $getParameters['password']
-                ])[0])
+            "exists" => $this->entityManager->getRepository(User::class)->findByUsernameAndPassword(
+                    $getParameters['username'],
+                    $getParameters['password']
+                ) !== null
         ];
     }
 }

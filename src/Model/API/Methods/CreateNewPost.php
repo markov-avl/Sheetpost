@@ -3,17 +3,17 @@
 namespace Sheetpost\Model\API\Methods;
 
 use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Sheetpost\Model\API\Parameters\StringParameter;
-use Sheetpost\Model\Database\Records\Post;
-use Sheetpost\Model\Database\Repositories\PostRepository;
-use Sheetpost\Model\Database\Repositories\UserRepository;
+use Sheetpost\Model\Database\Entities\Post;
+use Sheetpost\Model\Database\Entities\User;
 
 class CreateNewPost extends APIMethodAbstract
 {
-    public function __construct()
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        parent::__construct(['username', 'password', 'message']);
+        parent::__construct($entityManager, ['username', 'password', 'message']);
     }
 
     /**
@@ -28,15 +28,19 @@ class CreateNewPost extends APIMethodAbstract
             return ['success' => false, 'error' => $messageError];
         }
 
-        if (UserRepository::getByFields(['username' => $getParameters['username'], 'password' => $getParameters['password']])) {
-            $newPost = new Post(
-                null,
-                $getParameters['username'],
-                (new DateTime())->format('Y-m-d H:i:s'),
-                $getParameters['message']
-            );
-            PostRepository::save($newPost);
-            return ['success' => true, 'post_id' => $newPost->id];
+        $user = $this->entityManager->getRepository(User::class)->findByUsernameAndPassword(
+            $getParameters['username'],
+            $getParameters['password']
+        );
+
+        if ($user !== null) {
+            $newPost = new Post();
+            $newPost->setUser($user);
+            $newPost->setDate(new DateTime());
+            $newPost->setMessage($getParameters['message']);
+            $this->entityManager->persist($newPost);
+            $this->entityManager->flush();
+            return ['success' => true, 'post_id' => $newPost->getId()];
         }
         return ['success' => false, 'error' => 'invalid username or password'];
     }

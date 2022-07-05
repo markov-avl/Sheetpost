@@ -2,18 +2,17 @@
 
 namespace Sheetpost\Model\API\Methods;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Sheetpost\Model\API\Parameters\StringParameter;
-use Sheetpost\Model\Database\Records\User;
-use Sheetpost\Model\Database\Repositories\UserRepository;
-use Sheetpost\Model\LoggerWrapper;
+use Sheetpost\Model\Database\Entities\User;
 
 
 class CreateNewUser extends APIMethodAbstract
 {
-    public function __construct()
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        parent::__construct(['username', 'password']);
+        parent::__construct($entityManager, ['username', 'password']);
     }
 
     /**
@@ -31,13 +30,16 @@ class CreateNewUser extends APIMethodAbstract
             }
         }
 
-        $logger = new LoggerWrapper('logger');
-        $logger->debug('Тут');
-        if (UserRepository::getByUsername($getParameters['username']) !== null) {
-            return ['success' => false, 'error' => 'this username is already taken'];
+        $user = $this->entityManager->getRepository(User::class)->findByUsername($getParameters['username']);
+
+        if ($user === null) {
+            $newUser = new User();
+            $newUser->setUsername($getParameters['username']);
+            $newUser->setPassword($getParameters['password']);
+            $this->entityManager->persist($newUser);
+            $this->entityManager->flush();
+            return ['success' => true];
         }
-        $newUser = new User($getParameters['username'], $getParameters['password']);
-        UserRepository::save($newUser);
-        return ['success' => true];
+        return ['success' => false, 'error' => 'this username is already taken'];
     }
 }

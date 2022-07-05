@@ -6,8 +6,8 @@ use Twig\Environment;
 
 class MySheetsView extends PageViewAbstract
 {
-    public function __construct(Environment $twig, string $user, array $posts)
+    public function __construct(Environment $twig, string $rootPath, string $user, array $posts)
     {
-        parent::__construct($twig, $user, $posts, 'mysheets.html.twig');
+        parent::__construct($twig, $rootPath, $user, $posts, 'mysheets.html.twig');
     }
 }
