@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\Tools\Console\ConsoleRunner;
 use Dotenv\Dotenv;
-use Sheetpost\Model\Database\Configurations\DevelopmentConfiguration;
+use Sheetpost\Model\Database\Configurations\ProductionConfiguration;
 use Sheetpost\Model\Database\Connections\MySQLConnection;
 
 Dotenv::createImmutable(__DIR__)->load();
@@ -17,7 +17,7 @@ $connection = new MySQLConnection(
     $_ENV['DB_USER'],
     $_ENV['DB_PASSWORD']
 );
-$configuration = new DevelopmentConfiguration($_ENV['DOCTRINE_PROXY_PATH']);
+$configuration = new ProductionConfiguration($_ENV['DOCTRINE_PROXY_PATH']);
 
 try {
     $entityManager = EntityManager::create(

@@ -3,5 +3,5 @@
 /node_modules
 .env
 /var/cache/*/
-/var/proxy/*/
+/var/proxy/__CG__*
 /var/log/app.log
