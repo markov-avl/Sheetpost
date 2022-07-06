@@ -3,4 +3,5 @@
 /node_modules
 .env
 /var/cache/*/
+/var/proxy/*/
 /var/log/app.log

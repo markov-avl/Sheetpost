@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Page Not Found</title>
+    <link rel="icon" href="/{{ rootpath }}/static/logo.png">
+    <link rel="stylesheet" href="/{{ rootpath }}/static/styles.css">
+    {% include 'bootstrap.html.twig' %}
+</head>
+<body>
+<div class="d-flex justify-content-center h-100">
+    <div class="d-flex flex-column justify-content-center align-items-center">
+        <p class="text-center fs-1 m-3">404</p>
+        <a class="navbar-brand p-0 me-0 d-flex justify-content-center" href="/{{ rootpath }}">
+            <img class="img-fluid w-75" src="/{{ rootpath }}/static/logo.png" role="button" alt="">
+        </a>
+        <p class="text-center fs-1 m-3">Page Not Found</p>
+    </div>
+</div>
+</body>
+</html>

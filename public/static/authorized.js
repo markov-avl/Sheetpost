@@ -1,3 +1,6 @@
+const rootPath = 'sheetpost';
+
+
 function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -19,7 +22,7 @@ function insertAfter(newNode, existingNode) {
 
 function setSheetCount(sheet) {
     const postId = sheet.id.replace('postSheet', '')
-    fetch('/sheetpost-v3/api/get-post-sheet-count?' + new URLSearchParams({
+    fetch(`/${rootPath}/api/get-post-sheet-count?` + new URLSearchParams({
         post_id: postId
     }).toString())
         .then(response => response.json())
@@ -36,7 +39,7 @@ function clickOnSheet(sheet) {
     const postId = sheet.id.replace('postSheet', '')
     const apiRequest = img.classList.contains('sheeted') ? 'unsheet-post' : 'sheet-post'
     const classReplace = img.classList.contains('sheeted') ? ['sheeted', 'unsheeted'] : ['unsheeted', 'sheeted']
-    fetch(`/sheetpost-v3/api/${apiRequest}?` + new URLSearchParams({
+    fetch(`/${rootPath}/api/${apiRequest}?` + new URLSearchParams({
         username: getCookie('username'), password: getCookie('password'), post_id: postId
     }).toString())
         .then(response => response.json())
@@ -64,7 +67,7 @@ function updatePost(postId) {
     formValidationLabel.hidden = true
 
     if (messageText && messageText.length <= 4096) {
-        fetch('/sheetpost-v3/api/edit-post?' + new URLSearchParams({
+        return fetch(`/${rootPath}/api/edit-post?` + new URLSearchParams({
             username: getCookie('username'), password: getCookie('password'), post_id: postId, message: messageText
         }).toString())
             .then(response => response.json())
@@ -84,8 +87,8 @@ function updatePost(postId) {
                         insertAfter(p, lastPostElement)
                         lastPostElement = p
                     })
-                    return
-                } else if ('error' in data && data['error'] === 'invalid username or password') {
+                    return true
+                } else if ('error' in data && data['error'] === 'this post was not created by this user') {
                     formValidationLabel.innerText = 'Reauthorize and try again'
                 } else if ('error' in data) {
                     formValidationLabel.innerText = capitalize(data['error'])
@@ -93,13 +96,15 @@ function updatePost(postId) {
                     formValidationLabel.innerText = 'Something went wrong, try again later'
                 }
                 formValidationLabel.hidden = false
+                return false
             })
     }
+    return false
 }
 
 
 function deletePost(postId) {
-    fetch(`/sheetpost-v3/api/delete-post?` + new URLSearchParams({
+    fetch(`/${rootPath}/api/delete-post?` + new URLSearchParams({
         username: getCookie('username'), password: getCookie('password'), post_id: postId
     }).toString())
         .then(response => response.json())
@@ -132,9 +137,21 @@ function setEditListeners() {
                 .map(line => {
                     return line.innerText
                 }).join('\n')
+        const messageText = document.getElementById('editPostMessageText').value.trim()
+        const messageTextValidationLabel = document.getElementById('editPostMessageTextValidationLabel')
+        const formValidationLabel = document.getElementById('editPostFormValidationLabel')
+        if (!messageText) {
+            messageTextValidationLabel.innerText = 'Message is empty'
+        } else if (messageText.length > 4096) {
+            messageTextValidationLabel.innerText = `Maximum message length is 4096 characters (${messageText.length - 4096} characters exceeded)`
+        } else {
+            messageTextValidationLabel.innerText = ''
+        }
+        formValidationLabel.hidden = true
         document.getElementById('editPostUpdate').addEventListener('click', () => {
-            updatePost(postId)
-            document.getElementById('editPostCancel').click()
+            if (updatePost(postId)) {
+                document.getElementById('editPostCancel').click()
+            }
         })
     })
 }
@@ -173,7 +190,7 @@ document.getElementById('newPostCreate').addEventListener('click', () => {
     formValidationLabel.hidden = true
 
     if (messageText && messageText.length <= 4096) {
-        fetch('/sheetpost-v3/api/create-new-post?' + new URLSearchParams({
+        fetch(`/${rootPath}/api/create-new-post?` + new URLSearchParams({
             username: getCookie('username'), password: getCookie('password'), message: messageText
         }).toString())
             .then(response => response.json())

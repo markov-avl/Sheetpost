@@ -1,3 +1,6 @@
+const rootPath = 'sheetpost';
+
+
 function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -21,7 +24,7 @@ document.getElementById('logInEnter').addEventListener('click', () => {
     formValidationLabel.hidden = true
 
     if (username.value && password.value) {
-        fetch('/sheetpost-v3/api/is-user-exists?' + new URLSearchParams({
+        fetch(`/${rootPath}/api/is-user-exists?` + new URLSearchParams({
             username: username.value,
             password: password.value
         }).toString())
@@ -64,7 +67,7 @@ document.getElementById('signUpEnter').addEventListener('click', () => {
     formValidationLabel.hidden = true
 
     if (username.value && password.value && password.value === reEnterPassword.value) {
-        fetch('/sheetpost-v3/api/create-new-user?' + new URLSearchParams({
+        fetch(`/${rootPath}/api/create-new-user?` + new URLSearchParams({
             username: username.value,
             password: password.value
         }).toString())

@@ -49,3 +49,7 @@ textarea {
         padding: 0;
     }
 }
+
+img {
+    -webkit-user-drag: none !important;
+}
