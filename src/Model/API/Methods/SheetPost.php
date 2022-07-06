@@ -32,19 +32,15 @@ class SheetPost extends APIMethodAbstract
             return ['success' => false, 'error' => 'post not found'];
         }
 
-        $user = $this->entityManager->getRepository(User::class)->findByUsernameAndPassword(
-            $getParameters['username'],
-            $getParameters['password']
-        );
-        if ($user === null) {
-            return ['success' => false, 'error' => 'invalid username or password'];
+        $user = $this->entityManager->getRepository(User::class)->findByUsername($getParameters['username']);
+        if (isset($user) && $user->authenticate($getParameters['password'])) {
+            $newSheet = new Sheet();
+            $newSheet->setUser($user);
+            $newSheet->setPost($post);
+            $this->entityManager->persist($newSheet);
+            $this->entityManager->flush();
+            return ['success' => true];
         }
-
-        $newSheet = new Sheet();
-        $newSheet->setUser($user);
-        $newSheet->setPost($post);
-        $this->entityManager->persist($newSheet);
-        $this->entityManager->flush();
-        return ['success' => true];
+        return ['success' => false, 'error' => 'invalid username or password'];
     }
 }

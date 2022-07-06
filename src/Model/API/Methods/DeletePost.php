@@ -23,11 +23,11 @@ class DeletePost extends APIMethodAbstract
             return ['success' => false, 'error' => 'post not found'];
         }
         $user = $post->getUser();
-        if ($user->getUsername() !== $getParameters['username'] || $user->getPassword() !== $getParameters['password']) {
-            return ['success' => false, 'error' => 'this post was not created by this user'];
+        if ($user->getUsername() === $getParameters['username'] && $user->authenticate($getParameters['password'])) {
+            $this->entityManager->remove($post);
+            $this->entityManager->flush();
+            return ['success' => true];
         }
-        $this->entityManager->remove($post);
-        $this->entityManager->flush();
-        return ['success' => true];
+        return ['success' => false, 'error' => 'this post was not created by this user'];
     }
 }

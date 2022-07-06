@@ -22,7 +22,7 @@ class CreateNewUser extends APIMethodAbstract
     {
         foreach ([
                      new StringParameter($getParameters['username'], 'username', 32),
-                     new StringParameter($getParameters['password'], 'password', 64)
+                     new StringParameter($getParameters['password'], 'password', 60)
                  ] as $parameter) {
             $parameterError = $parameter->check();
             if ($parameterError) {
@@ -35,7 +35,7 @@ class CreateNewUser extends APIMethodAbstract
         if ($user === null) {
             $newUser = new User();
             $newUser->setUsername($getParameters['username']);
-            $newUser->setPassword($getParameters['password']);
+            $newUser->setPassword(password_hash($getParameters['password'], CRYPT_BLOWFISH));
             $this->entityManager->persist($newUser);
             $this->entityManager->flush();
             return ['success' => true];

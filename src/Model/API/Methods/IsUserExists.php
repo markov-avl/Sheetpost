@@ -18,12 +18,10 @@ class IsUserExists extends APIMethodAbstract
      */
     protected function getQueryResponse(array $getParameters): array
     {
+        $user = $this->entityManager->getRepository(User::class)->findByUsername($getParameters['username']);
         return [
-            "success" => true,
-            "exists" => $this->entityManager->getRepository(User::class)->findByUsernameAndPassword(
-                    $getParameters['username'],
-                    $getParameters['password']
-                ) !== null
+            'success' => true,
+            'exists' => isset($user) && $user->authenticate($getParameters['password'])
         ];
     }
 }

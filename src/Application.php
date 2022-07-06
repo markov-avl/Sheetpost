@@ -46,6 +46,7 @@ class Application
      */
     public function __construct()
     {
+        date_default_timezone_set("Asia/Vladivostok");
         Dotenv::createImmutable(dirname(__DIR__))->load();
 
         $this->logFormatter = new LineFormatter($_ENV['LOGGER_OUTPUT_FORMAT'], $_ENV['LOGGER_DATE_FORMAT']);
@@ -59,7 +60,11 @@ class Application
         $this->setTwig();
 
         $this->dbConnection = new MySQLConnection(
-            $_ENV['DB_HOST'], $_ENV['DB_PORT'], $_ENV['DB_NAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']
+            $_ENV['DB_HOST'],
+            $_ENV['DB_PORT'],
+            $_ENV['DB_NAME'],
+            $_ENV['DB_USER'],
+            $_ENV['DB_PASSWORD']
         );
         $this->ormConfiguration = new ProductionConfiguration($_ENV['DOCTRINE_PROXY_PATH']);
         $this->entityManager = EntityManager::create(
@@ -84,9 +89,12 @@ class Application
         }
     }
 
-    private function getUser(string $username, string $password): ?User
+    private function getUser(array $variables): ?User
     {
-        return $this->entityManager->getRepository(User::class)->findByUsernameAndPassword($username, $password);
+        if (isset($variables['username'], $variables['password'])) {
+            $user = $this->entityManager->getRepository(User::class)->findByUsername($variables['username']);
+        }
+        return isset($user) && $user->authenticate($variables['password']) ? $user : null;
     }
 
     private function setCookies(array $cookies): void
@@ -108,21 +116,25 @@ class Application
         header("Location: /$location");
     }
 
-    public function run(): void
+    /**
+     * Если была отправлена форма на выход
+     */
+    private function routeLogout(string $requestedPath): void
     {
-        $requestedPath = trim(explode('?', $_SERVER['REQUEST_URI'])[0], '/');
-
-        // Если была отправлена форма на выход
         if ($requestedPath === "$this->rootPath/logout") {
             $this->deleteCookies('username', 'password');
             $this->setLocation($this->rootPath);
             die();
         }
+    }
 
-        // Если была отправлена форма на вход и правильно введены пользователь и пароль
+    /**
+     * Если была отправлена форма на вход и правильно введены пользователь и пароль
+     */
+    private function routeLogin(string $requestedPath): void
+    {
         if ($requestedPath === "$this->rootPath/login") {
-            if (isset($_POST['username'], $_POST['password'])
-                && $this->getUser($_POST['username'], $_POST['password'])) {
+            if ($this->getUser($_POST)) {
                 $this->setCookies(['username' => $_POST['username'], 'password' => $_POST['password']]);
                 $this->setLocation("$this->rootPath/home");
             } else {
@@ -130,22 +142,42 @@ class Application
             }
             die();
         }
+    }
 
-        $user = isset($_COOKIE['username'], $_COOKIE['password']) ?
-            $this->getUser($_COOKIE['username'], $_COOKIE['password']) : null;
-
-        // Перенаправление на главную страницу, если пользователь значения кук были подменены
+    /**
+     * Перенаправление на главную страницу, если пользователь значения кук были подменены
+     */
+    private function routeWrongCookies(string $requestedPath, ?User $user): void
+    {
         if (preg_match("/$this->rootPath\/(home|myposts|mysheets)/", $requestedPath) && $user === null) {
             $this->deleteCookies('username', 'password');
             $this->setLocation($this->rootPath);
             die();
         }
+    }
 
-        // Перенаправление на домашнюю страницу авторизованного пользователя, если он сейчас находится на главной
+    /**
+     * Перенаправление на домашнюю страницу авторизованного пользователя, если он сейчас находится на главной
+     */
+    private function routeWrongHomePage(string $requestedPath, ?User $user): void
+    {
         if ($requestedPath === $this->rootPath && $user !== null) {
             $this->setLocation("$this->rootPath/home");
             die();
         }
+    }
+
+    public function run(): void
+    {
+        $requestedPath = trim(explode('?', $_SERVER['REQUEST_URI'])[0], '/');
+
+        $this->routeLogout($requestedPath);
+        $this->routeLogin($requestedPath);
+
+        $user = $this->getUser($_COOKIE);
+
+        $this->routeWrongCookies($requestedPath, $user);
+        $this->routeWrongHomePage($requestedPath, $user);
 
         // Случаи, когда пользователю нужно показать представления
         if (preg_match("/$this->rootPath\/api\/.+/", $requestedPath)) {

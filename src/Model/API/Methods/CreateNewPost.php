@@ -28,12 +28,9 @@ class CreateNewPost extends APIMethodAbstract
             return ['success' => false, 'error' => $messageError];
         }
 
-        $user = $this->entityManager->getRepository(User::class)->findByUsernameAndPassword(
-            $getParameters['username'],
-            $getParameters['password']
-        );
+        $user = $this->entityManager->getRepository(User::class)->findByUsername($getParameters['username']);
 
-        if ($user !== null) {
+        if (isset($user) && $user->authenticate($getParameters['password'])) {
             $newPost = new Post();
             $newPost->setUser($user);
             $newPost->setDate(new DateTime());

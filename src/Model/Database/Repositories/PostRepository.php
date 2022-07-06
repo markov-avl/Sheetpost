@@ -59,8 +59,7 @@ class PostRepository extends EntityRepository
             ->addSelect("(SELECT COUNT(1) FROM $sheetClass s0 WHERE s0.post = p.id) AS sheet_count")
             ->addSelect("1 AS sheeted")
             ->innerJoin('p.user', 'u')
-            ->where('p.user = :user_id')
-            ->andWhere("(SELECT COUNT(1) FROM $sheetClass s1 WHERE s1.post = p.id AND s1.user = :user_id) = 1")
+            ->where("(SELECT COUNT(1) FROM $sheetClass s1 WHERE s1.post = p.id AND s1.user = :user_id) = 1")
             ->orderBy('p.date', 'DESC')
             ->setParameter('user_id', $userId);
         return $query->getQuery()->getArrayResult();

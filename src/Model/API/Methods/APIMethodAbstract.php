@@ -15,22 +15,24 @@ abstract class APIMethodAbstract
         $this->parameters = $parameters;
     }
 
-    private function hasAllGetParameters(array $getParameters): bool
+    private function getMissingParameters(array $getParameters): array
     {
+        $missingParameters = [];
         foreach($this->parameters as $parameter) {
             if (!isset($getParameters[$parameter])) {
-                return false;
+                $missingParameters[] = $parameter;
             }
         }
-        return true;
+        return $missingParameters;
     }
 
     public function getResponse(array $getParameters): array
     {
-        if ($this->hasAllGetParameters($getParameters)) {
+        $missingParameters = $this->getMissingParameters($getParameters);
+        if (empty($missingParameters)) {
             return $this->getQueryResponse($getParameters);
         }
-        return ['success' => false, 'error' => 'missing parameters'];
+        return ['success' => false, 'error' => 'missing parameters: ' . join(', ', $missingParameters)];
     }
 
     protected abstract function getQueryResponse(array $getParameters): array;

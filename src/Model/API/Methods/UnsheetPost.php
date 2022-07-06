@@ -5,6 +5,7 @@ namespace Sheetpost\Model\API\Methods;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Sheetpost\Model\API\Parameters\IntegerParameter;
+use Sheetpost\Model\Database\Entities\Post;
 use Sheetpost\Model\Database\Entities\Sheet;
 use Sheetpost\Model\Database\Entities\User;
 
@@ -26,22 +27,22 @@ class UnsheetPost extends APIMethodAbstract
             return ['success' => false, 'error' => $postIdError];
         }
 
-        $user = $this->entityManager->getRepository(User::class)->findByUsernameAndPassword(
-            $getParameters['username'],
-            $getParameters['password']
-        );
-        if ($user === null) {
-            return ['success' => false, 'error' => 'invalid username or password'];
+        $post = $this->entityManager->getRepository(Post::class)->findById($getParameters['post_id']);
+        if ($post === null) {
+            return ['success' => false, 'error' => 'post not found'];
         }
 
-        $sheet = $this->entityManager->getRepository(Sheet::class)->findByUserIdAndPostId(
-            $user->getId(),
-            $getParameters['post_id']
-        );
-        if ($sheet !== null) {
-            $this->entityManager->remove($sheet);
-            $this->entityManager->flush();
+        $user = $this->entityManager->getRepository(User::class)->findByUsername($getParameters['username']);
+        if (isset($user) && $user->authenticate($getParameters['password'])) {
+            $sheet = $this->entityManager
+                ->getRepository(Sheet::class)
+                ->findByUserIdAndPostId($user->getId(), $post->getId());
+            if ($sheet !== null) {
+                $this->entityManager->remove($sheet);
+                $this->entityManager->flush();
+            }
+            return ['success' => true];
         }
-        return ['success' => true];
+        return ['success' => false, 'error' => 'invalid username or password'];
     }
 }

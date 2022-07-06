@@ -23,9 +23,14 @@ class User
     private string $username;
 
     /**
-     * @ORM\Column(name="password", type="string", length=64)
+     * @ORM\Column(name="password", type="string", length=60)
      */
     private string $password;
+
+    public function authenticate(string $password): bool
+    {
+        return password_verify($password, $this->password);
+    }
 
     /**
      * @return int
